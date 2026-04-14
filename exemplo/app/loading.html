@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Na Esquina - Carregando</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes pin-drop {
+            0%   { transform: translateY(-40px); opacity: 0; }
+            60%  { transform: translateY(6px); opacity: 1; }
+            80%  { transform: translateY(-3px); }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes name-in {
+            0%   { opacity: 0; letter-spacing: 0.3em; }
+            100% { opacity: 1; letter-spacing: 0.08em; }
+        }
+        @keyframes sub-in {
+            0%   { opacity: 0; transform: translateY(6px); }
+            100% { opacity: 0.4; transform: translateY(0); }
+        }
+        @keyframes bar-fill {
+            0%   { width: 0%; }
+            100% { width: 100%; }
+        }
+        @keyframes dot-blink {
+            0%,100% { opacity: 0.2; }
+            50%      { opacity: 1; }
+        }
+
+        .pin-wrap { animation: pin-drop  0.7s cubic-bezier(.4,1.6,.6,1) 0.3s both; }
+        .app-name { animation: name-in   0.8s ease 1.0s both; }
+        .app-sub  { animation: sub-in    0.6s ease 1.6s both; }
+        .bar-track { animation: sub-in    0.4s ease 2.0s both; }
+        .bar-fill  { animation: bar-fill  1.5s ease 2.0s both; }
+
+        .blink1 { animation: dot-blink 1.2s ease 2.0s infinite; }
+        .blink2 { animation: dot-blink 1.2s ease 2.2s infinite; }
+        .blink3 { animation: dot-blink 1.2s ease 2.4s infinite; }
+
+        .pin-wrap { margin-bottom: 32px; }
+        .app-name { color: var(--text-primary); font-size: 22px; font-weight: 500; margin: 0 0 6px; letter-spacing: 0.08em; font-family: 'Inter', sans-serif; }
+        .app-sub { color: var(--text-primary); font-size: 13px; margin: 0 0 48px; font-family: 'Inter', sans-serif; opacity: 0.4; font-weight: 400; }
+        .bar-track { width: 120px; height: 1.5px; background: rgba(166, 58, 18, 0.2); border-radius: 2px; overflow: hidden; opacity: 0; }
+        .bar-fill { height: 100%; background: var(--ferrugem); width: 0%; border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="loading-screen">
+            <div class="pin-wrap" id="pin-wrap">
+                <svg width="44" height="58" viewBox="0 0 44 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 1C10.4 1 1 10.4 1 22C1 37.5 22 57 22 57C22 57 43 37.5 43 22C43 10.4 33.6 1 22 1Z" fill="var(--ferrugem)"/>
+                    <circle cx="22" cy="22" r="7" fill="var(--bg-dark-1)"/>
+                </svg>
+            </div>
+
+            <p class="app-name" id="app-name">Na Esquina</p>
+
+            <div class="bar-track" id="bar-track">
+                <div class="bar-fill" id="bar-fill"></div>
+            </div>
+
+            <div class="loading-dots" style="display:flex;gap:5px;margin-top:18px;align-items:center;">
+                <div class="dot blink1" style="width:4px;height:4px;background:var(--ferrugem);border-radius:50%;opacity:0.2;"></div>
+                <div class="dot blink2" style="width:4px;height:4px;background:var(--ferrugem);border-radius:50%;opacity:0.2;"></div>
+                <div class="dot blink3" style="width:4px;height:4px;background:var(--ferrugem);border-radius:50%;opacity:0.2;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(function() {
+            sessionStorage.setItem('loadingCompleted', 'true');
+            window.location.href = 'index.html';
+        }, 4000);
+    </script>
+</body>
+</html>

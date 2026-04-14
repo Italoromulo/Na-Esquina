@@ -1,0 +1,981 @@
+/* Variáveis de Cores */
+:root {
+    --carmesin: #A60321;
+    --borgonho: #73162F;
+    --mogno: #592C05;
+    --brasa: #D97941;
+    --ferrugem: #A63A12;
+    --bg-dark-1: #080503;
+    --bg-dark-2: #120806;
+    --bg-light-1: #F2E4D4;
+    --bg-light-2: #746863;
+
+    --glass-bg: rgba(18, 8, 6, 0.7);
+    --glass-border: rgba(166, 3, 33, 0.3);
+    --text-primary: #F2E4D4;
+    --text-secondary: #d4c5b0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark-1);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.mobile-container {
+    max-width: 430px;
+    margin: 0 auto;
+    height: 100vh;
+    position: relative;
+    background: linear-gradient(180deg, var(--bg-dark-2) 0%, var(--bg-dark-1) 100%);
+    overflow: hidden;
+}
+
+/* Search Header */
+.search-header {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    padding: 16px; /* Aumentei levemente para o respiro premium */
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+    /* Gradiente mais suave para não "cortar" o vidro */
+    background: linear-gradient(180deg, rgba(8, 5, 3, 0.8) 0%, rgba(8, 5, 3, 0) 100%);
+}
+
+.search-bar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    /* 1. FUNDO: Mais transparente para o blur trabalhar melhor */
+    background: rgba(255, 255, 255, 0.03);
+    
+    /* 2. ÓPTICA: O segredo Apple (Blur alto + Saturação) */
+    backdrop-filter: blur(25px) saturate(210%) brightness(110%);
+    -webkit-backdrop-filter: blur(25px) saturate(210%) brightness(110%);
+    
+    /* 3. FORMATO: Bordas mais arredondadas para o look moderno */
+    border-radius: 18px;
+    padding: 10px 16px;
+    gap: 12px;
+
+    /* 4. RELEVO: Rim Light e Sub-pixel border */
+    border: none; /* Removemos a borda comum */
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.12),           /* Borda de cristal fina */
+        inset 0 1.5px 2px -1px rgba(255, 255, 255, 0.3), /* Brilho na quina superior */
+        0 10px 30px rgba(0, 0, 0, 0.4);                 /* Sombra projetada no mapa */
+}
+
+.search-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    opacity: 0.8; /* Suaviza o ícone para integrar ao vidro */
+}
+
+.search-bar input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 15px; /* 15px-16px é o ideal para leitura mobile */
+    outline: none;
+    font-family: 'Inter', sans-serif;
+}
+
+.search-bar input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.filter-btn {
+    /* 1. FUNDO: Vidro tingido com a cor Brasa (15% de opacidade) */
+    background: rgba(217, 121, 65, 0.15);
+    
+    /* 2. ÓPTICA: Desfoque profundo e Saturação para a cor 'acender' */
+    backdrop-filter: blur(20px) saturate(220%) brightness(110%);
+    -webkit-backdrop-filter: blur(20px) saturate(220%) brightness(110%);
+    
+    /* 3. FORMATO: Arredondamento mais suave (padrão iOS) */
+    border-radius: 12px;
+    width: 36px; /* Aumentei levemente para melhorar a área de toque */
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    
+    /* 4. RELEVO: Borda de cristal e Rim Light superior */
+    box-shadow: 
+        0 0 0 1px rgba(217, 121, 65, 0.3),             /* Borda fina na cor brasa */
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.4),    /* Brilho intenso no topo */
+        0 8px 20px rgba(0, 0, 0, 0.3);   /* Sombra projetada no mapa */
+        
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-btn:hover {
+    background: rgba(217, 121, 65, 0.25);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 
+        0 0 0 1px rgba(217, 121, 65, 0.5),
+        inset 0 1.5px 3px rgba(255, 255, 255, 0.6),
+        0 15px 30px rgba(217, 121, 65, 0.2);
+}
+
+.filter-btn:active {
+    transform: scale(0.95);
+    background: rgba(217, 121, 65, 0.4);
+    transition: all 0.1s ease;
+}
+
+.filter-btn svg {
+    width: 20px;
+    height: 20px;
+    /* Cor do ícone: Usamos o Light1 para brilhar sobre o vidro brasa */
+    color: var(--text-primary);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    position: relative;
+    z-index: 2;
+}
+
+.location-btn {
+    /* 1. FUNDO: Vidro tingido com Carmesin (opacidade ultra-baixa para transparência) */
+    background: rgba(166, 3, 33, 0.12);
+    
+    /* 2. ÓPTICA AVANÇADA: O "Look Apple" (Blur alto + Saturação vibrante) */
+    -webkit-backdrop-filter: blur(25px) saturate(210%) brightness(110%);
+    backdrop-filter: blur(25px) saturate(210%) brightness(110%);
+    
+    /* 3. FORMATO E DIMENSÕES: Padrão iOS Pro */
+    border-radius: 16px;
+    width: 50px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    
+    /* 4. RELEVO E REFRAÇÃO: Borda de cristal e Rim Light superior */
+    border: none; /* Substituímos a borda comum por sombras de sub-pixel */
+    box-shadow: 
+        0 0 0 1px rgba(166, 3, 33, 0.3),               /* Borda fina avermelhada */
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.3),    /* Brilho de luz no topo do vidro */
+        0 10px 25px rgba(0, 0, 0, 0.4);                /* Sombra projetada no mapa */
+        
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Efeito de brilho estático para profundidade */
+.location-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.location-btn:hover {
+    background: rgba(166, 3, 33, 0.22);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 
+        0 0 0 1px rgba(166, 3, 33, 0.5),
+        inset 0 1.5px 3px rgba(255, 255, 255, 0.5),
+        0 15px 30px rgba(166, 3, 33, 0.2);
+}
+
+.location-btn:active {
+    transform: scale(0.92); /* Feedback tátil de "afundar" o botão */
+    background: rgba(166, 3, 33, 0.45);
+    transition: all 0.1s ease;
+}
+
+.location-btn svg {
+    width: 22px;
+    height: 22px;
+    /* Cor Brasa com filtro de brilho interno */
+    color: var(--brasa);
+    filter: drop-shadow(0 0 8px rgba(217, 121, 65, 0.4));
+    position: relative;
+    z-index: 2;
+}
+
+/* Categories Tabs */
+.categories-tabs {
+    position: absolute;
+    top: 80px; /* Ajustado para dar respiro ao novo header de busca */
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 10px;
+    padding: 4px 8px;
+    overflow-x: auto;
+    z-index: 90;
+    scrollbar-width: none;
+    /* Suaviza o scroll no mobile */
+    -webkit-overflow-scrolling: touch;
+}
+
+.categories-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.tab {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 18px;
+    
+    /* 1. FUNDO: Base translúcida leitosa ultra-suave */
+    background: rgba(255, 255, 255, 0.03);
+    
+    /* 2. ÓPTICA: Look Apple Pro (Blur alto + Saturação) */
+    backdrop-filter: blur(16px) saturate(180%) brightness(110%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%) brightness(110%);
+    
+    /* 3. RELEVO: Rim Light e Sub-pixel border */
+    border: none;
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.1),            /* Borda de cristal fina */
+        inset 0 1.5px 2px -1px rgba(255, 255, 255, 0.3), /* Brilho na quina superior */
+        0 8px 16px rgba(0, 0, 0, 0.3);                 /* Sombra projetada no mapa */
+    
+    border-radius: 20px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tab span:first-child {
+    font-size: 22px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* ESTADO ATIVO: Vidro de Rubi Iluminado */
+.tab.active {
+    background: rgba(166, 3, 33, 0.4);
+    color: #fff;
+}
+
+/* Textura Micro-Grão para as Tabs (Opcional para realismo tátil) */
+.tab::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.tab:active {
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Map Container */
+.map-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 100px;
+    z-index: 1;
+}
+
+.map-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.map-background {
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(ellipse at 30% 40%, rgba(217, 121, 65, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 60%, rgba(166, 3, 33, 0.15) 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg-dark-2) 0%, var(--bg-dark-1) 100%);
+    position: relative;
+}
+
+/* Grid lines para simular mapa */
+.map-background::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(166, 3, 33, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(166, 3, 33, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.3;
+}
+
+/* Pins do Mapa */
+.map-pin {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--brasa), var(--ferrugem));
+    border-radius: 50% 50% 0 50%;
+    transform: rotate(45deg);
+    cursor: pointer;
+    transition: all 0.3s;
+    animation: bounce 2s ease-in-out infinite;
+    box-shadow: 0 4px 15px rgba(217, 121, 65, 0.4);
+}
+
+.map-pin::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    width: 20px;
+    height: 20px;
+    background: var(--bg-dark-1);
+    border-radius: 50%;
+    border: 2px solid var(--brasa);
+}
+
+.map-pin.active {
+    transform: rotate(45deg) scale(1.2);
+    box-shadow: 0 6px 25px rgba(217, 121, 65, 0.6);
+}
+
+.map-pin:hover {
+    transform: rotate(45deg) scale(1.15);
+}
+
+@keyframes bounce {
+    0%, 100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(45deg) translateY(-8px); }
+}
+
+.map-pin:nth-child(2) { animation-delay: 0.1s; }
+.map-pin:nth-child(3) { animation-delay: 0.3s; }
+.map-pin:nth-child(4) { animation-delay: 0.6s; }
+
+/* Live Indicator */
+.map-overlay {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(18, 8, 6, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--brasa);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* Restaurants Bottom Sheet */
+.restaurants-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    
+    /* 1. FUNDO: Base escura ultra-translúcida */
+    background: rgba(18, 8, 6, 0.6);
+    
+    /* 2. ÓPTICA: Desfoque alto + Saturação Apple Style */
+    backdrop-filter: blur(35px) saturate(200%) brightness(110%);
+    -webkit-backdrop-filter: blur(35px) saturate(200%) brightness(110%);
+    
+    border-radius: 32px 32px 0 0;
+    max-height: 48%;
+    display: flex;
+    flex-direction: column;
+    z-index: 50;
+    
+    /* 3. RELEVO: Borda de sub-pixel e Rim Light no topo */
+    border: none;
+    box-shadow: 
+        0 -10px 40px rgba(0, 0, 0, 0.5),             /* Sombra projetada no mapa */
+        0 0 0 1px rgba(255, 255, 255, 0.08),         /* Borda de cristal fina */
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.15); /* Brilho na quina superior */
+}
+
+.sheet-handle {
+    width: 40px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2); /* Alça mais discreta e vítrea */
+    border-radius: 10px;
+    margin: 12px auto;
+    cursor: grab;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.3);
+}
+
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px 10px;
+}
+
+.sheet-header h3 {
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.count-badge {
+    background: var(--carmesin);
+    color: var(--text-primary);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.restaurants-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+}
+
+/* Restaurant Card */
+.restaurant-card {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    
+    /* 1. FUNDO: Vidro quase invisível */
+    background: rgba(255, 255, 255, 0.03);
+    
+    /* 2. BORDA: Sub-pixel highlight */
+    border: none;
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        0 4px 15px rgba(0, 0, 0, 0.2);
+        
+    border-radius: 20px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.restaurant-card.active {
+    /* Efeito Rubi: O card 'acende' com a cor Brasa */
+    background: rgba(217, 121, 65, 0.12);
+    box-shadow: 
+        0 0 0 1px rgba(217, 121, 65, 0.4),
+        0 12px 24px rgba(0, 0, 0, 0.3),
+        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+}
+
+.restaurant-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 14px;
+    /* Gradiente mais vibrante para brilhar através do vidro */
+    background: linear-gradient(135deg, var(--carmesin), var(--mogno));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.2);
+}
+
+.restaurant-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.restaurant-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.restaurant-cuisine {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.restaurant-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.restaurant-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--brasa);
+}
+
+.restaurant-distance {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.restaurant-status {
+    font-size: 11px;
+    padding: 3px 8px;
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border-radius: 6px;
+    align-self: flex-start;
+}
+
+.restaurant-status.closed {
+    background: rgba(244, 67, 54, 0.2);
+    color: #F44336;
+}
+
+/* Glass Navigation Bar */
+.glass-nav {
+    position: absolute;
+    bottom: 15px; /* Um pouco mais de respiro para a sombra projetada agir */
+    left: 16px;
+    right: 16px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 12px 10px;
+    z-index: 100;
+    border-radius: 22px; /* Curvatura mais orgânica estilo iOS 17 */
+
+    /* CAMADA 1: O CORPO (Base translúcida profunda com gradiente) */
+    background: linear-gradient(
+        135deg, 
+        rgba(18, 8, 6, 0.4) 0%, 
+        rgba(166, 3, 33, 0.05) 100%
+    );
+
+    /* CAMADA 2: ÓPTICA DE ALTA FIDELIDADE (O segredo do vidro Apple) */
+    -webkit-backdrop-filter: blur(15px) saturate(210%) brightness(110%);
+    backdrop-filter: blur(15px) saturate(210%) brightness(110%);
+
+    /* CAMADA 3: REFRAÇÃO DE BORDA (Sub-pixel Rim Light) */
+    /* Removemos o border comum e usamos múltiplas sombras para nitidez máxima */
+    border: none;
+    box-shadow: 
+        /* A "Casca" do vidro (Borda externa ultra fina de 1px) */
+        0 0 0 1px rgba(255, 255, 255, 0.12),
+        /* Rim Light Superior (Luz batendo no topo da barra) */
+        inset 0 1.5px 2px -1px rgba(255, 255, 255, 0.4),
+        /* Sombra interna inferior (Dá espessura ao cristal) */
+        inset 0 -1.5px 3px -1px rgba(0, 0, 0, 0.3),
+        /* Glow sutil da cor Carmesim nas bordas internas */
+        inset 0 0 15px rgba(166, 3, 33, 0.1),
+        /* Sombra de profundidade (Ambient Occlusion) */
+        0 15px 35px -5px rgba(0, 0, 0, 0.6);
+
+    /* CAMADA 4: TEXTURA FÍSICA */
+    position: absolute;
+    overflow: hidden;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* CAMADA 5: TEXTURA DE MICRO-GRÃO (Evita o aspecto plástico liso) */
+.glass-nav::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.06;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mask-image: radial-gradient(circle, black, transparent 120%);
+}
+
+/* CAMADA 6: BRILHO ESPECULAR (Um leve reflexo diagonal fixo) */
+.glass-nav::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 11px;
+    transition: all 0.3s;
+    border-radius: 16px;
+}
+
+.nav-item svg {
+    width: 22px;
+    height: 22px;
+    transition: all 0.3s;
+}
+
+.nav-item.active {
+    color: var(--brasa);
+    background: rgba(217, 121, 65, 0.15);
+}
+
+.nav-item.active svg {
+    fill: var(--brasa);
+    stroke: var(--brasa);
+}
+
+.nav-item:active {
+    transform: scale(0.9);
+}
+
+/* Modal de Filtros */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    /* 1. FUNDO: Escurecimento gradual para focar no conteúdo */
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
+    
+    /* 2. ÓPTICA: Desfoque sutil no fundo para profundidade */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    transition: all 0.4s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+/* O "Pulo do Gato": O Container Interno do Modal */
+.modal-content {
+    width: 100%;
+    max-width: 430px;
+    
+    /* 3. MATERIAL: Vidro Fumê Apple Style */
+    background: rgba(18, 8, 6, 0.85);
+    
+    /* 4. ÓPTICA INTERNA: Saturação alta para as cores do mapa não morrerem */
+    backdrop-filter: blur(30px) saturate(210%) brightness(110%);
+    -webkit-backdrop-filter: blur(30px) saturate(210%) brightness(110%);
+    
+    border-radius: 32px 32px 0 0;
+    
+    /* 5. RELEVO: Rim Light e Sub-pixel Border */
+    border: none;
+    box-shadow: 
+        0 -10px 40px rgba(0, 0, 0, 0.5),             /* Sombra externa */
+        0 0 0 1px rgba(255, 255, 255, 0.12),         /* Borda de cristal fina */
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.2);  /* Brilho na quina superior */
+    
+    /* Animação de entrada suave */
+    animation: modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Textura Física de Micro-Grão (Noise) no Modal */
+.modal-content::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    border-radius: 32px 32px 0 0;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(100%) scale(0.98); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 430px;
+    background: linear-gradient(180deg, var(--bg-dark-2) 0%, var(--bg-dark-1) 100%);
+    border-radius: 24px 24px 0 0;
+    border: 1px solid var(--glass-border);
+    border-bottom: none;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.modal-header h3 {
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.filter-section {
+    margin-bottom: 24px;
+}
+
+.filter-section h4 {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.range-slider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.range-slider input {
+    flex: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 6px;
+    background: var(--borgonho);
+    border-radius: 3px;
+    outline: none;
+}
+
+.range-slider input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--brasa);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(217, 121, 65, 0.4);
+}
+
+#distance-value {
+    min-width: 50px;
+    color: var(--brasa);
+    font-weight: 600;
+}
+
+.rating-options,
+.price-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.rating-option,
+.price-option {
+    padding: 10px 16px;
+    background: rgba(115, 22, 47, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.rating-option.active,
+.price-option.active {
+    background: var(--carmesin);
+    border-color: var(--carmesin);
+    color: var(--text-primary);
+}
+
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 20px;
+    border-top: 1px solid var(--glass-border);
+}
+
+/* --- BOTÕES ULTRA-REALISTAS (GLASSMOPRHISM PRO) --- */
+
+.btn-secondary,
+.btn-primary {
+    flex: 1;
+    padding: 16px; /* Aumentado para um toque mais confortável no mobile */
+    border-radius: 16px; /* Curvatura mais moderna */
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* BOTÃO PRIMÁRIO: Vidro de Rubi (Carmesim) */
+.btn-primary {
+    /* 1. FUNDO: Gradiente com transparência para o blur agir */
+    background: linear-gradient(135deg, rgba(166, 3, 33, 0.8), rgba(115, 22, 47, 0.6));
+    color: var(--text-primary);
+    
+    /* 2. ÓPTICA: Brilho e Saturação Apple */
+    backdrop-filter: blur(15px) saturate(180%) brightness(110%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%) brightness(110%);
+    
+    /* 3. RELEVO: Rim Light (luz de borda) e Profundidade */
+    box-shadow: 
+        0 0 0 1px rgba(166, 3, 33, 0.4),               /* Borda de cristal */
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.4),    /* Brilho no topo */
+        0 8px 20px rgba(166, 3, 33, 0.3);              /* Glow projetado */
+}
+
+/* BOTÃO SECUNDÁRIO: Vidro Fosco (Frosted Glass) */
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    
+    /* Óptics */
+    backdrop-filter: blur(15px) saturate(150%);
+    -webkit-backdrop-filter: blur(15px) saturate(150%);
+    
+    /* Relevo */
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.1),            /* Borda sub-pixel */
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.15),   /* Rim Light discreto */
+        0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* EFEITO DE BRILHO PASSANTE NO HOVER (Opcional) */
+.btn-primary::after, .btn-secondary::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: 0.6s;
+}
+
+.btn-primary:hover::after, .btn-secondary:hover::after {
+    left: 100%;
+}
+
+/* INTERAÇÕES TÁTEIS */
+.btn-primary:active, .btn-secondary:active {
+    transform: scale(0.96);
+    filter: brightness(0.9);
+}
+
+.btn-primary:hover, .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        inset 0 1.5px 3px rgba(255, 255, 255, 0.5),
+        0 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Scrollbar customizada */
+.restaurants-list::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.restaurants-list::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.restaurants-list::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb {
+    background: var(--borgonho);
+    border-radius: 2px;
+}
+
+#map-background {
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Garante que fique atrás dos outros elementos */
+    background: var(--bg-dark-1); /* Cor de fundo enquanto o mapa carrega */
+}
+
+/* Estilização para os Pins do Mapa Real (Leaflet) */
+.leaflet-marker-icon.custom-pin {
+    background: none;
+    border: none;
+}
