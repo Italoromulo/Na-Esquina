@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Camada_2" data-name="Camada 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 197.86 285.53">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#Gradiente_sem_nome_7-4);
+      }
+
+      .cls-2 {
+        fill: url(#Gradiente_sem_nome_7-2);
+      }
+
+      .cls-3 {
+        fill: url(#Gradiente_sem_nome_7-3);
+      }
+
+      .cls-4 {
+        fill: #442611;
+      }
+
+      .cls-5 {
+        fill: url(#Gradiente_sem_nome_7);
+      }
+    </style>
+    <linearGradient id="Gradiente_sem_nome_7" data-name="Gradiente sem nome 7" x1="15.8" y1="120.72" x2="213.66" y2="120.72" gradientTransform="translate(-15.8 22.05)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ec7d3e"/>
+      <stop offset=".49" stop-color="#d97941"/>
+      <stop offset="1" stop-color="#94552b"/>
+    </linearGradient>
+    <linearGradient id="Gradiente_sem_nome_7-2" data-name="Gradiente sem nome 7" x1="37.39" y1="98.99" x2="67.13" y2="98.99" gradientTransform="matrix(1,0,0,1,0,0)" xlink:href="#Gradiente_sem_nome_7"/>
+    <linearGradient id="Gradiente_sem_nome_7-3" data-name="Gradiente sem nome 7" x1="84.06" y1="98.99" x2="113.8" y2="98.99" gradientTransform="matrix(1,0,0,1,0,0)" xlink:href="#Gradiente_sem_nome_7"/>
+    <linearGradient id="Gradiente_sem_nome_7-4" data-name="Gradiente sem nome 7" x1="130.73" y1="98.99" x2="160.47" y2="98.99" gradientTransform="matrix(1,0,0,1,0,0)" xlink:href="#Gradiente_sem_nome_7"/>
+  </defs>
+  <g id="Camada_1-2" data-name="Camada 1">
+    <g>
+      <circle class="cls-4" cx="99.12" cy="98.99" r="71.41"/>
+      <path class="cls-5" d="M182.85,46.21C142.66-18.38,46.19-14.42,11.02,52.84c-22.64,43.29-6.58,79.33,13.96,118.88,20.67,39.79,46.59,77.57,72.83,113.81h2.23c26.23-36.24,52.16-74.02,72.82-113.81,22.16-42.66,38.04-80.42,9.99-125.51ZM98.62,169.35c-38.86,0-70.36-31.5-70.36-70.36S59.76,28.64,98.62,28.64s70.35,31.5,70.35,70.35-31.5,70.36-70.35,70.36Z"/>
+      <circle class="cls-2" cx="52.26" cy="98.99" r="14.87"/>
+      <circle class="cls-3" cx="98.93" cy="98.99" r="14.87"/>
+      <circle class="cls-1" cx="145.6" cy="98.99" r="14.87"/>
+    </g>
+  </g>
+</svg>

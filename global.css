@@ -1,0 +1,48 @@
+/* ... seu código existente do input:-webkit-autofill ... */
+html, body {
+  background-color: #0B0503 !important;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1A120D inset !important;
+  -webkit-text-fill-color: #F2E4D4 !important;
+  caret-color: #F2E4D4 !important;
+}
+
+/* ==========================================================================
+   Filtro e Estilização do Picker (Select) para o Navegador
+   ========================================================================== */
+
+/* Estiliza a caixa do combo e remove os estilos padrão do sistema operacional */
+select {
+  background-color: #1A120D !important;
+  color: #F2E4D4 !important;
+  border: none !important;
+  outline: none !important;
+  padding: 15px !important;
+  font-size: 16px !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+  appearance: none !important; /* Remove a seta padrão feia do navegador */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+
+/* Estiliza a lista de opções (dropdown) que abre ao clicar */
+select option {
+  background-color: #1A120D !important; /* Força o fundo escuro na lista */
+  color: #F2E4D4 !important;            /* Força a cor do texto clara */
+  padding: 12px !important;
+}
+
+/* Garante que o item focado/selecionado com o teclado no combo não fique branco */
+select:focus {
+  background-color: #1A120D !important;
+  color: #F2E4D4 !important;
+}
