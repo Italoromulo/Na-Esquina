@@ -19,8 +19,6 @@ import AppToast, { ToastMessage } from '@/components/AppToast';
 import { ArrowLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-
-
 type Vendedor = {
   id: number | string;
   nome?: string;
@@ -29,6 +27,7 @@ type Vendedor = {
   endereco?: string;
   imagem_url?: string;
   status?: boolean;
+  offline?: boolean; // 💡 Garantido na tipagem
   latitude?: number | null;
   longitude?: number | null;
   destaque?: boolean;
@@ -36,7 +35,7 @@ type Vendedor = {
   dia_promo?: boolean;
   combo_especial?: boolean;
   mais_vendido?: boolean;
-  porcentagem_desconto?: number | null; // 💡 Nova coluna tipada
+  porcentagem_desconto?: number | null;
 };
 
 type PromocaoKey = 'semana_destaque' | 'dia_promo' | 'combo_especial' | 'mais_vendido' | 'destaque';
@@ -85,7 +84,6 @@ export default function PainelVendedorScreen() {
       destaque: !!loja.destaque,
     });
     
-    // 💡 Recupera a informação direto do campo numérico se ele existir
     if (loja.porcentagem_desconto !== undefined && loja.porcentagem_desconto !== null) {
       setDescontoTexto(`${loja.porcentagem_desconto}%`);
     } else {
@@ -116,7 +114,11 @@ export default function PainelVendedorScreen() {
     }
 
     if (lojaBanco) {
-      setVendedor(lojaBanco);
+      // 💡 Sincroniza o campo offline vindo direto do Supabase
+      setVendedor({
+        ...lojaBanco,
+        offline: !!lojaBanco.offline
+      });
       aplicarPromosDaLoja(lojaBanco);
 
       const { count, error: erroCount } = await supabase
@@ -132,6 +134,7 @@ export default function PainelVendedorScreen() {
           id: 'metadata',
           ...lojaMeta,
           status: !!lojaMeta.status,
+          offline: !!lojaMeta.offline, // 💡 Mapeia também dos metadados
         } as Vendedor;
         setVendedor(vendedorMeta);
         aplicarPromosDaLoja(vendedorMeta);
@@ -170,10 +173,59 @@ export default function PainelVendedorScreen() {
         },
       });
 
-      setVendedor((atual) => (atual ? { ...atual, status: novoStatus } : atual));
+      setVendedor((atual) => (atual ? { ...atual, status: novoStatus, offline: !novoStatus } : atual));
       showToast(novoStatus ? 'Você está online' : 'Você saiu do mapa', novoStatus ? 'Sua loja aparece como vendendo agora.' : 'Sua loja ficou offline para os clientes.', 'success');
     } catch (err: any) {
       showToast('Alteração não realizada', err.message || 'Não foi possível atualizar o status.', 'error');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  // 💥 FUNÇÃO TOGGLE DO OFFLINE CORRIGIDA: Atualiza e força a re-renderização das cores na UI
+  async function alternarAtivacaoRestaurante() {
+    if (!vendedor || vendedor.id === 'metadata') return;
+    setSalvando(true);
+
+    const novoStatusOffline = !vendedor.offline; 
+    
+    // Se for inativar (offline = true), o status de vendendo agora obrigatoriamente vai para false
+    const novoStatusVendendo = novoStatusOffline ? false : vendedor.status;
+
+    const { data: auth } = await supabase.auth.getUser();
+
+    try {
+      const { error } = await supabase
+        .from('restaurantes')
+        .update({ 
+          offline: novoStatusOffline,
+          status: novoStatusVendendo 
+        })
+        .eq('id', vendedor.id);
+
+      if (error) throw error;
+
+      await supabase.auth.updateUser({
+        data: {
+          ...(auth.user?.user_metadata ?? {}),
+          loja: {
+            ...(auth.user?.user_metadata?.loja ?? {}),
+            offline: novoStatusOffline,
+            status: novoStatusVendendo,
+          },
+        },
+      });
+
+      // 💡 Atualiza os estados locais forçando a troca de valores para redesenhar o botão
+      setVendedor((atual) => (atual ? { ...atual, offline: novoStatusOffline, status: novoStatusVendendo } : atual));
+      
+      showToast(
+        novoStatusOffline ? 'Restaurante Inativado' : 'Restaurante Reativado',
+        novoStatusOffline ? 'Seu restaurante foi removido de todas as listagens.' : 'Seu ponto voltou a ficar visível no sistema.',
+        'success'
+      );
+    } catch (err: any) {
+      showToast('Erro ao atualizar', err.message || 'Não foi possível alterar a ativação.', 'error');
     } finally {
       setSalvando(false);
     }
@@ -226,7 +278,6 @@ export default function PainelVendedorScreen() {
     setPromos(novoEstadoPromos);
   }
 
-  // 💡 MÁSCARA COM EXIBIÇÃO EM TEMPO REAL DO SÍMBOLO DE PORCENTAGEM
   const tratarMudarDesconto = (texto: string) => {
     const apenasNumeros = texto.replace(/\D/g, '');
     
@@ -251,16 +302,12 @@ export default function PainelVendedorScreen() {
     }
 
     const algumDestaqueAtivo = Object.values(promos).some(Boolean);
-    
-    // 💡 Processamento para envio ao Banco de dados
-    let descontoFinalTexto = null;
     let porcentagemDescontoNum = null;
 
     if (promos.dia_promo && descontoTexto.trim()) {
       const numeroLimpo = descontoTexto.replace('%', '').trim();
       if (numeroLimpo) {
         porcentagemDescontoNum = parseInt(numeroLimpo, 10);
-        descontoFinalTexto = `${numeroLimpo}% OFF`;
       }
     }
 
@@ -272,7 +319,7 @@ export default function PainelVendedorScreen() {
         dia_promo: promos.dia_promo,
         combo_especial: promos.combo_especial,
         mais_vendido: promos.mais_vendido,
-        porcentagem_desconto: porcentagemDescontoNum, // 💡 Gravando o número puro
+        porcentagem_desconto: porcentagemDescontoNum,
       };
 
       const { error } = await supabase
@@ -381,7 +428,7 @@ export default function PainelVendedorScreen() {
               value={descontoTexto}
               onChangeText={tratarMudarDesconto}
               keyboardType="number-pad"
-              maxLength={4} // 💡 Aumentado para 4 para suportar "100%" confortavelmente
+              maxLength={4}
             />
           )}
 
@@ -420,6 +467,21 @@ export default function PainelVendedorScreen() {
             <Text style={styles.secondaryButtonText}>Ver como cliente</Text>
           </TouchableOpacity>
         )}
+
+        {/* 💥 BOTÃO TOGGLE TOTALMENTE CORRIGIDO E RESPONSIVO */}
+        {vendedor.id !== 'metadata' && (
+          <TouchableOpacity 
+            style={[styles.statusToggleButton, vendedor.offline ? styles.buttonBlue : styles.buttonDanger]} 
+            onPress={alternarAtivacaoRestaurante}
+            disabled={salvando}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.statusToggleButtonText}>
+              {salvando ? 'Processando...' : vendedor.offline ? 'Reativar restaurante' : 'Inativar restaurante'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
       </Animated.ScrollView>
       <GlassNav scrollY={scrollY} />
     </View>
@@ -489,4 +551,8 @@ const styles = StyleSheet.create({
   buttonText: { color: '#0B0503', textAlign: 'center', fontWeight: '900', fontSize: 16 },
   secondaryButton: { backgroundColor: '#1A120D', padding: 16, borderRadius: 16, marginTop: 12, borderWidth: 1, borderColor: 'rgba(242,228,212,0.08)' },
   secondaryButtonText: { color: '#F2E4D4', textAlign: 'center', fontWeight: '800' },
+  statusToggleButton: { padding: 16, borderRadius: 16, marginTop: 12, alignItems: 'center', justifyContent: 'center' },
+  buttonDanger: { backgroundColor: '#A61B34' },
+  buttonBlue: { backgroundColor: '#2563EB' },
+  statusToggleButtonText: { color: '#FFFFFF', textAlign: 'center', fontWeight: '900', fontSize: 16 }
 });
