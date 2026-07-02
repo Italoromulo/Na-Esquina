@@ -40,7 +40,6 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [modalVisivel, setModalVisivel] = useState(false);
 
-  // 1. Carrega sempre que a tela ganhar o foco do usuário
   useFocusEffect(
     useCallback(() => {
       carregarRestaurantes();
@@ -48,7 +47,6 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
     }, [])
   );
 
-  // 2. Escuta apenas os favoritos em tempo real
   useEffect(() => {
     favoritesService.getFavorites().then(setFavorites);
 
@@ -74,10 +72,8 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
   };
 
   const filteredRestaurantes = restaurantesSupa.filter((item) => {
-    // 💥 BLINDAGEM MÁXIMA: Se for a Locação (ID 18), ignora qualquer filtro e força aparecer!
     if (item.id === 18 || String(item.id) === '18') return true;
 
-    // Filtro de Categoria corrigido para aceitar strings e vazios
     const matchesCategory = activeCategory === 'vendendo'
       ? item.status === true
       : (!activeCategory || activeCategory === 'todas' || String(item.categoria_id) === String(activeCategory));
@@ -100,7 +96,6 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
       : 5.0;
     if (rating < minRating) return false;
 
-    // Corrigido aqui: Convertendo explicitamente as strings do Supabase para números reais antes de calcular
     if (maxDistance < 99999) {
       if (!userLocation || !item.latitude || !item.longitude) return false;
       const distance = calculateDistance(
@@ -136,6 +131,76 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
     }
     return 0;
   });
+
+  // 💥 SEPARAÇÃO STRATÉGICA: Divide a lista final filtrada/ordenada entre Online e Offline
+  const restaurantesOnline = sortedRestaurantes.filter(item => item.status === true);
+  const restaurantesOffline = sortedRestaurantes.filter(item => item.status !== true);
+
+  // Função auxiliar para renderizar a estrutura padrão de cada card de restaurante
+  const renderCard = (item: any) => {
+    const isFav = favorites.includes(String(item.id));
+    const rating = item.total_avaliacoes && item.total_avaliacoes > 0
+      ? (item.soma_notas / item.total_avaliacoes).toFixed(1)
+      : '5.0';
+
+    const distance = (userLocation && item.latitude && item.longitude)
+      ? calculateDistance(userLocation.latitude, userLocation.longitude, parseFloat(item.latitude), parseFloat(item.longitude))
+      : null;
+
+    const distanceText = distance !== null && !isNaN(distance)
+      ? (distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`)
+      : null;
+
+    const avgPrice = getAveragePrice(item) || 0;
+    const priceTier = avgPrice <= 20 ? '$' : avgPrice <= 40 ? '$$' : '$$$';
+
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={[styles.card, isTablet && styles.cardTablet]}
+        onPress={() => {
+          router.push(`/vendedor/${item.id}`);
+        }}
+        activeOpacity={0.95}
+      >
+        <Image source={{ uri: item.imagem_url }} style={styles.img} />
+
+        <View style={[styles.statusBadge, item.status ? styles.statusBadgeOnline : styles.statusBadgeOffline]}>
+          <Text style={styles.statusBadgeText}>{item.status ? "🟢 Online" : "🔴 Offline"}</Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => toggleFav(item.id)}
+          activeOpacity={0.7}
+        >
+          <Heart
+            size={18}
+            color={isFav ? "#D97941" : "#F2E4D4"}
+            fill={isFav ? "#D97941" : "transparent"}
+          />
+        </TouchableOpacity>
+
+        <View style={styles.infoContainer}>
+          <Text style={styles.nomeRestaurante}>{item.nome}</Text>
+          <View style={styles.ratingRow}>
+            <Text style={styles.estrela}>⭐</Text>
+            <Text style={styles.notaTexto}>{rating}</Text>
+            <Text style={styles.divisor}>·</Text>
+            <Text style={styles.categoriaTexto}>{item.categoria || 'Vendedor'}</Text>
+            <Text style={styles.divisor}>·</Text>
+            <Text style={styles.categoriaTexto}>{priceTier}</Text>
+            {distanceText && (
+              <>
+                <Text style={styles.divisor}>·</Text>
+                <Text style={styles.categoriaTexto}>{distanceText}</Text>
+              </>
+            )}
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={[styles.container, isTablet && styles.containerTablet]}>
@@ -190,70 +255,22 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
           </Text>
         </View>
       ) : (
-        sortedRestaurantes.map((item) => {
-          const isFav = favorites.includes(String(item.id));
-          const rating = item.total_avaliacoes && item.total_avaliacoes > 0
-            ? (item.soma_notas / item.total_avaliacoes).toFixed(1)
-            : '5.0';
+        <>
+          {/* 1. RENDERIZA OS RESTAURANTES ONLINE */}
+          {restaurantesOnline.map((item) => renderCard(item))}
 
-          const distance = (userLocation && item.latitude && item.longitude)
-            ? calculateDistance(userLocation.latitude, userLocation.longitude, parseFloat(item.latitude), parseFloat(item.longitude))
-            : null;
+          {/* 2. RENDERIZA A LINHA DIVISÓRIA "OFFLINES" (Apenas se houver algum offline) */}
+          {restaurantesOffline.length > 0 && (
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>Offline</Text>
+              <View style={styles.dividerLine} />
+            </View>
+          )}
 
-          const distanceText = distance !== null && !isNaN(distance)
-            ? (distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`)
-            : null;
-
-          const avgPrice = getAveragePrice(item) || 0;
-          const priceTier = avgPrice <= 20 ? '$' : avgPrice <= 40 ? '$$' : '$$$';
-
-          return (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.card, isTablet && styles.cardTablet]}
-              onPress={() => {
-                router.push(`/vendedor/${item.id}`);
-              }}
-              activeOpacity={0.95}
-            >
-              <Image source={{ uri: item.imagem_url }} style={styles.img} />
-
-              <View style={[styles.statusBadge, item.status ? styles.statusBadgeOnline : styles.statusBadgeOffline]}>
-                <Text style={styles.statusBadgeText}>{item.status ? "🟢 Online" : "🔴 Offline"}</Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.favoriteButton}
-                onPress={() => toggleFav(item.id)}
-                activeOpacity={0.7}
-              >
-                <Heart
-                  size={18}
-                  color={isFav ? "#D97941" : "#F2E4D4"}
-                  fill={isFav ? "#D97941" : "transparent"}
-                />
-              </TouchableOpacity>
-
-              <View style={styles.infoContainer}>
-                <Text style={styles.nomeRestaurante}>{item.nome}</Text>
-                <View style={styles.ratingRow}>
-                  <Text style={styles.estrela}>⭐</Text>
-                  <Text style={styles.notaTexto}>{rating}</Text>
-                  <Text style={styles.divisor}>·</Text>
-                  <Text style={styles.categoriaTexto}>{item.categoria || 'Vendedor'}</Text>
-                  <Text style={styles.divisor}>·</Text>
-                  <Text style={styles.categoriaTexto}>{priceTier}</Text>
-                  {distanceText && (
-                    <>
-                      <Text style={styles.divisor}>·</Text>
-                      <Text style={styles.categoriaTexto}>{distanceText}</Text>
-                    </>
-                  )}
-                </View>
-              </View>
-            </TouchableOpacity>
-          );
-        })
+          {/* 3. RENDERIZA OS RESTAURANTES OFFLINE ABAIXO DA LINHA */}
+          {restaurantesOffline.map((item) => renderCard(item))}
+        </>
       )}
     </View>
   );
@@ -290,4 +307,26 @@ const styles = StyleSheet.create({
   statusBadgeOnline: { backgroundColor: "rgba(11, 5, 3, 0.85)", borderColor: "rgba(34, 197, 94, 0.5)" },
   statusBadgeOffline: { backgroundColor: "rgba(11, 5, 3, 0.85)", borderColor: "rgba(239, 68, 68, 0.5)" },
   statusBadgeText: { color: "#FFFFFF", fontSize: 11, fontWeight: "900", textTransform: "uppercase", letterSpacing: 0.5 },
+  
+  // 💥 NOVOS ESTILOS PARA A LINHA DIVISÓRIA DOS OFFLINES:
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginVertical: 20,
+    paddingHorizontal: 4,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(242, 228, 212, 0.12)', // Uma linha clara bem sutil combinando com seu tema
+  },
+  dividerText: {
+    color: 'rgba(242, 228, 212, 0.4)', // Texto off-white fosco
+    paddingHorizontal: 16,
+    fontSize: 13,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+  },
 });
