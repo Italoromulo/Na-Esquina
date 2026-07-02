@@ -72,16 +72,27 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
   };
 
   const filteredRestaurantes = restaurantesSupa.filter((item) => {
-    // 💥 CORREÇÃO MÁXIMA: Bloqueia na hora se o campo offline for verdadeiro (ou string "true")
-    if (item.offline === true || item.offline === 'true') return false;
+    // 💡 ATIVE ISSO SE QUISER FILTRAR OS LOGS SÓ PARA UM ID ESPECÍFICO (ex: id 18)
+    // const deveMonitorar = item.id === 18;
+    const deveMonitorar = true; // Mostra o diagnóstico de todos os que sumirem
 
-    // Filtro por categorias ou "vendendo agora" (status online)
+    // 1. Filtro do botão Inativar/Reativar
+    if (item.offline === true || item.offline === 'true') {
+      if (deveMonitorar) console.log(`⚠️ Restaurante "${item.nome}" (ID: ${item.id}) não aparece porque está INATIVADO (offline: true) no banco.`);
+      return false;
+    }
+
+    // 2. Filtro de Categorias
     const matchesCategory = activeCategory === 'vendendo'
       ? item.status === true
       : (!activeCategory || activeCategory === 'todas' || String(item.categoria_id) === String(activeCategory));
 
-    if (!matchesCategory) return false;
+    if (!matchesCategory) {
+      if (deveMonitorar) console.log(`⚠️ Restaurante "${item.nome}" barrou no filtro de CATEGORIA. Categoria selecionada: "${activeCategory}", Categoria do item: "${item.categoria_id}", Status Online: ${item.status}`);
+      return false;
+    }
 
+    // 3. Filtro de Busca por texto
     if (searchQuery) {
       const normalizedQuery = normalizeText(searchQuery);
       const matchesName = item.nome && normalizeText(item.nome).includes(normalizedQuery);
@@ -90,27 +101,45 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
         (prod.nome && normalizeText(prod.nome).includes(normalizedQuery)) ||
         (prod.descricao && normalizeText(prod.descricao).includes(normalizedQuery))
       );
-      if (!(matchesName || matchesCategoryName || matchesMenu)) return false;
+      if (!(matchesName || matchesCategoryName || matchesMenu)) {
+        if (deveMonitorar) console.log(`⚠️ Restaurante "${item.nome}" barrou no termo de busca: "${searchQuery}"`);
+        return false;
+      }
     }
 
+    // 4. Filtro de Nota/Avaliação
     const rating = item.total_avaliacoes && item.total_avaliacoes > 0
       ? item.soma_notas / item.total_avaliacoes
       : 5.0;
-    if (rating < minRating) return false;
+    if (rating < minRating) {
+      if (deveMonitorar) console.log(`⚠️ Restaurante "${item.nome}" barrou na avaliação mínima. Nota: ${rating}, Mínima exigida: ${minRating}`);
+      return false;
+    }
 
+    // 5. Filtro de Distância (onde dava o erro de string)
     if (maxDistance < 99999) {
-      if (!userLocation || !item.latitude || !item.longitude) return false;
+      if (!userLocation || !item.latitude || !item.longitude) {
+        if (deveMonitorar) console.log(`⚠️ Restaurante "${item.nome}" barrou por falta de coordenadas geográficas.`);
+        return false;
+      }
       const distance = calculateDistance(
         userLocation.latitude,
         userLocation.longitude,
         parseFloat(item.latitude),
         parseFloat(item.longitude)
       );
-      if (!isNaN(distance) && distance > maxDistance) return false;
+      if (!isNaN(distance) && distance > maxDistance) {
+        if (deveMonitorar) console.log(`⚠️ Restaurante "${item.nome}" barrou na DISTÂNCIA. Distância real: ${distance.toFixed(2)} km, Máxima permitida: ${maxDistance} km`);
+        return false;
+      }
     }
 
+    // 6. Filtro de Preço Máximo
     const avgPrice = getAveragePrice(item) || 0;
-    if (maxPrice > 0 && avgPrice > maxPrice) return false;
+    if (maxPrice > 0 && avgPrice > maxPrice) {
+      if (deveMonitorar) console.log(`⚠️ Restaurante "${item.nome}" barrou no preço máximo. Preço médio: R$${avgPrice}, Máximo permitido: R$${maxPrice}`);
+      return false;
+    }
 
     return true;
   });

@@ -378,6 +378,13 @@ export default function CadastroVendedorScreen() {
       return;
     }
 
+    // 💡 LIMITADOR: Converte para número real (ex: 9999800 vira 99998.00) e valida
+    const valorCentavos = Number(precoNumeros);
+    if (valorCentavos > 999900) {
+      showToast('Preço muito alto', 'O preço máximo permitido para um item é R$ 99.998,00.', 'error');
+      return;
+    }
+
     setCardapio((atual) => [
       ...atual,
       {
@@ -832,8 +839,15 @@ export default function CadastroVendedorScreen() {
               setProdutoPreco('');
               return;
             }
-            const valorNumerico = (Number(apenasNumeros) / 100).toFixed(2);
-            setProdutoPreco(`R$ ${valorNumerico.replace('.', ',')}`);
+            
+            // 💡 LIMITADOR EM TEMPO DE DIGITAÇÃO: Não deixa ultrapassar R$ 99.998,00 (9999800 centavos)
+            const valorNumerico = Number(apenasNumeros);
+            if (valorNumerico > 9999800) {
+              return; // Bloqueia a digitação de novos números
+            }
+
+            const valorFormatado = (valorNumerico / 100).toFixed(2);
+            setProdutoPreco(`R$ ${valorFormatado.replace('.', ',')}`);
           }}
         />
 

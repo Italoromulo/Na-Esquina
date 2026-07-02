@@ -15,6 +15,41 @@ const normalizeText = (text: string) => {
     .toLowerCase();
 };
 
+// 💡 Função auxiliar robusta para verificar se a loja está dentro do horário de funcionamento
+const estaNoHorarioDeFuncionamento = (horaInicio?: string, horaFim?: string) => {
+  if (!horaInicio || !horaFim) return true; // Se não tiver horário definido corretamente, considera aberto e segue o baile
+
+  try {
+    const agora = new Date();
+    const horasAtuais = agora.getHours();
+    const minutosAtuais = agora.getMinutes();
+    const tempoAtualEmMinutos = horasAtuais * 60 + minutosAtuais;
+
+    // Converte os horários "HH:MM" ou formatos simples vindos do banco para minutos totais
+    const converterParaMinutos = (horaStr: string) => {
+      const partes = horaStr.split(':');
+      const h = parseInt(partes[0], 10);
+      const m = partes[1] ? parseInt(partes[1], 10) : 0;
+      return isNaN(h) ? null : h * 60 + m;
+    };
+
+    const inicioMinutos = converterParaMinutos(horaInicio);
+    const fimMinutos = converterParaMinutos(horaFim);
+
+    if (inicioMinutos === null || fimMinutos === null) return true;
+
+    // Caso o horário de fechamento passe da meia-noite (ex: das 18:00 às 02:00)
+    if (fimMinutos < inicioMinutos) {
+      return tempoAtualEmMinutos >= inicioMinutos || tempoAtualEmMinutos <= fimMinutos;
+    }
+
+    return tempoAtualEmMinutos >= inicioMinutos && tempoAtualEmMinutos <= fimMinutos;
+  } catch (error) {
+    console.error("Erro ao calcular horário de funcionamento:", error);
+    return true; // Fallback amigável caso dê ruim no parse
+  }
+};
+
 export default function DeliveryMap() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [categorias, setCategorias] = useState<any[]>([]);
@@ -22,7 +57,6 @@ export default function DeliveryMap() {
     userLocation,
     restaurantes,
     searchQuery,
-    activeCategory,
     minRating,
     maxDistance,
     maxPrice,
@@ -38,14 +72,15 @@ export default function DeliveryMap() {
     carregarCategorias();
   }, []);
 
-
   const filteredRestaurantes = restaurantes.filter((item) => {
-    const matchesCategory = activeCategory === 'vendendo'
-      ? item.status === true
-      : !activeCategory || String(item.categoria_id) === activeCategory;
+    // 💥 CRITÉRIO DE EXPULSÃO 1: Se estiver explicitamente inativo ou offline, some na hora do mapa
+    if (item.offline === true || item.offline === 'true') return false;
+    if (item.status === false || item.status === 'false') return false;
 
-    if (!matchesCategory) return false;
+    // 💥 CRITÉRIO DE EXPULSÃO 2: Validação da faixa de horário de funcionamento
+    if (!estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim)) return false;
 
+    // Mantém os outros filtros globais ativos caso o usuário pesquise na home
     if (searchQuery) {
       const normalizedQuery = normalizeText(searchQuery);
       const matchesName = item.nome && normalizeText(item.nome).includes(normalizedQuery);
@@ -67,10 +102,10 @@ export default function DeliveryMap() {
       const distance = calculateDistance(
         userLocation.latitude,
         userLocation.longitude,
-        item.latitude,
-        item.longitude
+        parseFloat(item.latitude),
+        parseFloat(item.longitude)
       );
-      if (distance > maxDistance) return false;
+      if (!isNaN(distance) && distance > maxDistance) return false;
     }
 
     const avgPrice = getAveragePrice(item);
@@ -87,7 +122,6 @@ export default function DeliveryMap() {
         const catNome = cat ? cat.nome : '';
         const pinAsset = getMapPin(catNome);
         
-        // Resolução altamente robusta de asset (String, default, uri ou Native resolveAssetSource)
         let pinUri = '';
         if (typeof pinAsset === 'string') {
           pinUri = pinAsset;
@@ -103,7 +137,6 @@ export default function DeliveryMap() {
           pinUri = Image.resolveAssetSource(pinAsset)?.uri || '';
         }
 
-        // Garante URL absoluta no web para funcionar dentro do iframe srcDoc
         if (pinUri && !pinUri.startsWith('http://') && !pinUri.startsWith('https://') && !pinUri.startsWith('data:')) {
           if (typeof window !== 'undefined' && window.location) {
             pinUri = `${window.location.origin}${pinUri.startsWith('/') ? '' : '/'}${pinUri}`;
@@ -121,29 +154,27 @@ export default function DeliveryMap() {
               popupAnchor: [0, -42]
             });
 
-            const marker${r.id} = L.marker([${r.latitude}, ${r.longitude}], { icon: icon${r.id} })
+            const marker${r.id} = L.marker([${parseFloat(r.latitude)}, ${parseFloat(r.longitude)}], { icon: icon${r.id} })
               .addTo(map)
               .bindPopup(${JSON.stringify(r.nome)});
 
             marker${r.id}.on('click', () => {
-              criarRota(${r.latitude}, ${r.longitude});
+              criarRota(${parseFloat(r.latitude)}, ${parseFloat(r.longitude)});
             });
           } catch (error) {
             console.error("Erro ao renderizar ícone personalizado para ${r.nome}:", error);
-            // Fallback para marcador padrão do Leaflet para o mapa não quebrar
-            const marker${r.id} = L.marker([${r.latitude}, ${r.longitude}])
+            const marker${r.id} = L.marker([${parseFloat(r.latitude)}, ${parseFloat(r.longitude)}])
               .addTo(map)
               .bindPopup(${JSON.stringify(r.nome)});
 
             marker${r.id}.on('click', () => {
-              criarRota(${r.latitude}, ${r.longitude});
+              criarRota(${parseFloat(r.latitude)}, ${parseFloat(r.longitude)});
             });
           }
         `;
       }
     )
     .join('\n');
-
 
   return (
     <View style={[styles.mapCard, { height: isExpanded ? 620 : 320 }]}>
@@ -162,8 +193,6 @@ export default function DeliveryMap() {
               body { margin: 0; padding: 0; background: #0a0a0a; }
               #map { width: 100vw; height: 100vh; background: #0a0a0a; }
               .leaflet-container { font-family: sans-serif; }
-              
-              /* Estilo Premium Dark para os botões de Zoom */
               .leaflet-bar { 
                 border: 1px solid rgba(255, 255, 255, 0.1) !important; 
                 box-shadow: 0 4px 20px rgba(0,0,0,0.8) !important; 
@@ -202,11 +231,8 @@ export default function DeliveryMap() {
               let currentRoute = null;
               let removeRouteBtn = null;
 
-              // 💡 Função absoluta para limpar QUALQUER rota restante no mapa
               function limparTodasAsRotas() {
                 map.eachLayer(function(layer) {
-                  // OSRM/Leaflet constrói rotas usando Polyline ou GeoJSON. 
-                  // Passando esse pente fino, qualquer linha residual é deletada da tela.
                   if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
                     map.removeLayer(layer);
                   }
@@ -231,7 +257,6 @@ export default function DeliveryMap() {
               }
 
               async function desenharRota(startLat, startLon, destLat, destLon) {
-                // 💡 Garante limpeza imediata antes de fazer a nova requisição HTTP
                 limparTodasAsRotas();
 
                 const response = await fetch(
@@ -247,7 +272,6 @@ export default function DeliveryMap() {
                   return;
                 }
 
-                // 💡 Segunda limpeza preventiva pós-fetch (caso o usuário tenha clicado enquanto o HTTP carregava)
                 limparTodasAsRotas();
 
                 currentRoute = L.geoJSON(data.routes[0].geometry, {
@@ -291,9 +315,7 @@ export default function DeliveryMap() {
                     const btn = document.getElementById('remove-route-btn');
                     if (btn) {
                       btn.onclick = function() {
-                        // 💡 Agora o botão X chama a varredura absoluta de limpeza
                         limparTodasAsRotas();
-                        
                         if (removeRouteBtn) {
                           removeRouteBtn.remove();
                           removeRouteBtn = null;
@@ -406,7 +428,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.3)', // 💡 Atualizado: de shadow* para o novo padrão boxShadow da Web
+    boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.3)',
   },
   expandBlur: {
     flex: 1,
