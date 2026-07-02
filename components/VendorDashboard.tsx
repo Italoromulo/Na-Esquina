@@ -5,6 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LayoutDashboard, MapPin, PackagePlus, Power } from 'lucide-react-native';
 import { supabase } from '@/services/supabase';
 import AppToast, { ToastMessage } from '@/components/AppToast';
+import { useLocation } from '@/context/LocationContext';
 
 type LojaResumo = {
   id?: number | string;
@@ -12,11 +13,13 @@ type LojaResumo = {
   categoria?: string;
   endereco?: string;
   status?: boolean;
+  offline?: boolean; 
   cardapio?: any[];
-  imagem?: string; // Mantemos como 'imagem' aqui no nosso estado do React
+  imagem?: string; 
 };
 
 export default function VendorDashboard() {
+  const { carregarRestaurantes } = useLocation(); 
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [loja, setLoja] = useState<LojaResumo | null>(null);
@@ -79,7 +82,7 @@ export default function VendorDashboard() {
       setLoja({ 
         ...lojaBanco, 
         cardapio: cardapioBanco ?? [],
-        // ⚠️ ATENÇÃO AQUI: Troque 'foto_url' pelo nome exato da coluna da imagem na sua tabela do Supabase
+        offline: !!lojaBanco.offline, 
         imagem: lojaBanco.foto_url || lojaBanco.imagem_url || lojaBanco.foto || lojaBanco.imagem 
       });
     } else {
@@ -87,6 +90,7 @@ export default function VendorDashboard() {
         id: 'metadata', 
         ...(metadata.loja ?? {}), 
         status: !!metadata.loja?.status,
+        offline: !!metadata.loja?.offline,
         imagem: metadata.loja?.foto_url || metadata.loja?.imagem 
       });
     }
@@ -97,14 +101,16 @@ export default function VendorDashboard() {
   async function alternarStatus() {
     if (!loja) return;
     setSalvando(true);
-    const novoStatus = !loja.status;
+    const novoStatus = !loja.status; // 💡 Controla estritamente o STATUS agora
     const { data: auth } = await supabase.auth.getUser();
 
     try {
       if (loja.id && loja.id !== 'metadata') {
         const { error } = await supabase
           .from('restaurantes')
-          .update({ status: novoStatus })
+          .update({ 
+            status: novoStatus // 💡 Alterando estritamente a coluna status
+          })
           .eq('id', loja.id);
         if (error) throw error;
       }
@@ -126,7 +132,14 @@ export default function VendorDashboard() {
         .eq('auth_id', auth.user?.id);
 
       setLoja((atual) => (atual ? { ...atual, status: novoStatus } : atual));
-      showToast(novoStatus ? 'Você está online' : 'Você saiu do mapa', novoStatus ? 'Seu ponto aparece como vendendo agora.' : 'Seu ponto ficou offline.', 'success');
+      
+      await carregarRestaurantes();
+
+      showToast(
+        novoStatus ? 'Você está online' : 'Você saiu do mapa', 
+        novoStatus ? 'Seu ponto aparece como vendendo agora.' : 'Seu ponto ficou offline.', 
+        'success'
+      );
     } catch (err: any) {
       showToast('Status não alterado', err.message || 'Não foi possível atualizar o status.', 'error');
     } finally {
@@ -149,7 +162,6 @@ export default function VendorDashboard() {
       <AppToast toast={toast} onHide={() => setToast(null)} />
       <View style={styles.headerRow}>
         
-        {/* Renderização Condicional */}
         {loja.imagem ? (
           <Image source={{ uri: loja.imagem }} style={styles.avatarImage} />
         ) : (
@@ -162,33 +174,45 @@ export default function VendorDashboard() {
           <Text style={styles.kicker}>Área do vendedor</Text>
           <Text style={styles.title}>{loja.nome || 'Seu ponto'}</Text>
         </View>
-        <View style={[styles.statusPill, loja.status && styles.statusPillOn]}>
-          <Text style={styles.statusText}>{loja.status ? 'Online' : 'Offline'}</Text>
-        </View>
+
+        {!loja.offline && (
+          <View style={[styles.statusPill, loja.status && styles.statusPillOn]}>
+            <Text style={styles.statusText}>{loja.status ? 'Online' : 'Offline'}</Text>
+          </View>
+        )}
       </View>
 
-      <View style={styles.metricsRow}>
-        <View style={styles.metricBox}>
-          <Text style={styles.metricNumber}>{loja.cardapio?.length || 0}</Text>
-          <Text style={styles.metricLabel}>itens</Text>
+      {loja.offline ? (
+        <View style={styles.inativoContainer}>
+          <Text style={styles.inativoText}>Restaurante Inativo</Text>
+          <Text style={styles.inativoSubtext}>Acesse o painel completo para reativar o ponto.</Text>
         </View>
-        <View style={styles.metricBoxWide}>
-          <MapPin size={14} color="rgba(242, 228, 212, 0.62)" />
-          <Text style={styles.metricLabel} numberOfLines={1}>{loja.endereco || 'Local não informado'}</Text>
-        </View>
-      </View>
+      ) : (
+        <>
+          <View style={styles.metricsRow}>
+            <View style={styles.metricBox}>
+              <Text style={styles.metricNumber}>{loja.cardapio?.length || 0}</Text>
+              <Text style={styles.metricLabel}>itens</Text>
+            </View>
+            <View style={styles.metricBoxWide}>
+              <MapPin size={14} color="rgba(242, 228, 212, 0.62)" />
+              <Text style={styles.metricLabel} numberOfLines={1}>{loja.endereco || 'Local não informado'}</Text>
+            </View>
+          </View>
 
-      <View style={styles.actionsRow}>
-        <TouchableOpacity style={[styles.actionButton, loja.status && styles.actionButtonDanger]} onPress={alternarStatus} disabled={salvando}>
-          <Power size={16} color="#0B0503" />
-          <Text style={styles.actionText}>{salvando ? 'Salvando...' : loja.status ? 'Parar' : 'Vender agora'}</Text>
-        </TouchableOpacity>
+          <View style={styles.actionsRow}>
+            <TouchableOpacity style={[styles.actionButton, loja.status && styles.actionButtonDanger]} onPress={alternarStatus} disabled={salvando}>
+              <Power size={16} color="#0B0503" />
+              <Text style={styles.actionText}>{salvando ? 'Salvando...' : loja.status ? 'Parar' : 'Vender agora'}</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/cadastro-vendedor')}>
-          <PackagePlus size={16} color="#F2E4D4" />
-          <Text style={styles.secondaryText}>Adicionar item</Text>
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/cadastro-vendedor')}>
+              <PackagePlus size={16} color="#F2E4D4" />
+              <Text style={styles.secondaryText}>Adicionar item</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
       <TouchableOpacity style={styles.panelLink} onPress={() => router.push('/painel-vendedor')}>
         <Text style={styles.panelLinkText}>Abrir painel completo</Text>
@@ -219,6 +243,31 @@ const styles = StyleSheet.create({
   actionText: { color: '#0B0503', fontWeight: '900' },
   secondaryButton: { flex: 1, minHeight: 48, borderRadius: 16, backgroundColor: 'rgba(242, 228, 212, 0.06)', borderWidth: 1, borderColor: 'rgba(242, 228, 212, 0.10)', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
   secondaryText: { color: '#F2E4D4', fontWeight: '900' },
-  panelLink: { marginTop: 14, alignItems: 'center' },
+  panelLink: { marginTop: 16, alignItems: 'center' },
   panelLinkText: { color: 'rgba(242, 228, 212, 0.62)', fontWeight: '800' },
+  inativoContainer: {
+    backgroundColor: 'rgba(217, 121, 65, 0.05)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(217, 121, 65, 0.25)',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    marginTop: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4
+  },
+  inativoText: {
+    color: '#D97941', 
+    fontSize: 20,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  inativoSubtext: {
+    color: 'rgba(242, 228, 212, 0.52)',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+  }
 });

@@ -72,8 +72,10 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
   };
 
   const filteredRestaurantes = restaurantesSupa.filter((item) => {
-    if (item.id === 18 || String(item.id) === '18') return true;
+    // 💥 CORREÇÃO MÁXIMA: Bloqueia na hora se o campo offline for verdadeiro (ou string "true")
+    if (item.offline === true || item.offline === 'true') return false;
 
+    // Filtro por categorias ou "vendendo agora" (status online)
     const matchesCategory = activeCategory === 'vendendo'
       ? item.status === true
       : (!activeCategory || activeCategory === 'todas' || String(item.categoria_id) === String(activeCategory));
@@ -132,11 +134,9 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
     return 0;
   });
 
-  // 💥 SEPARAÇÃO STRATÉGICA: Divide a lista final filtrada/ordenada entre Online e Offline
   const restaurantesOnline = sortedRestaurantes.filter(item => item.status === true);
   const restaurantesOffline = sortedRestaurantes.filter(item => item.status !== true);
 
-  // Função auxiliar para renderizar a estrutura padrão de cada card de restaurante
   const renderCard = (item: any) => {
     const isFav = favorites.includes(String(item.id));
     const rating = item.total_avaliacoes && item.total_avaliacoes > 0
@@ -259,7 +259,7 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
           {/* 1. RENDERIZA OS RESTAURANTES ONLINE */}
           {restaurantesOnline.map((item) => renderCard(item))}
 
-          {/* 2. RENDERIZA A LINHA DIVISÓRIA "OFFLINES" (Apenas se houver algum offline) */}
+          {/* 2. RENDERIZA A LINHA DIVISÓRIA (Somente se houver offline visível) */}
           {restaurantesOffline.length > 0 && (
             <View style={styles.dividerContainer}>
               <View style={styles.dividerLine} />
@@ -307,8 +307,6 @@ const styles = StyleSheet.create({
   statusBadgeOnline: { backgroundColor: "rgba(11, 5, 3, 0.85)", borderColor: "rgba(34, 197, 94, 0.5)" },
   statusBadgeOffline: { backgroundColor: "rgba(11, 5, 3, 0.85)", borderColor: "rgba(239, 68, 68, 0.5)" },
   statusBadgeText: { color: "#FFFFFF", fontSize: 11, fontWeight: "900", textTransform: "uppercase", letterSpacing: 0.5 },
-  
-  // 💥 NOVOS ESTILOS PARA A LINHA DIVISÓRIA DOS OFFLINES:
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -319,10 +317,10 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(242, 228, 212, 0.12)', // Uma linha clara bem sutil combinando com seu tema
+    backgroundColor: 'rgba(242, 228, 212, 0.12)',
   },
   dividerText: {
-    color: 'rgba(242, 228, 212, 0.4)', // Texto off-white fosco
+    color: 'rgba(242, 228, 212, 0.4)',
     paddingHorizontal: 16,
     fontSize: 13,
     fontWeight: '800',
