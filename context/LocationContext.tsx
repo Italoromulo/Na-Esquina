@@ -9,6 +9,7 @@ export interface UserLocation {
 }
 
 export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return 99999; // Fallback caso falte alguma coordenada
   const R = 6371; // Earth radius in km
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
@@ -23,7 +24,8 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
 }
 
 export function getAveragePrice(item: any): number {
-  if (!item.cardapio || item.cardapio.length === 0) return 20; // Default average price
+  // Se não houver cardápio ou se o item não tiver produtos, devolve 0 para não estourar filtros de preço máximo
+  if (!item.cardapio || item.cardapio.length === 0) return 0; 
   let total = 0;
   let count = 0;
   item.cardapio.forEach((prod: any) => {
@@ -36,7 +38,7 @@ export function getAveragePrice(item: any): number {
       }
     }
   });
-  return count > 0 ? total / count : 20;
+  return count > 0 ? total / count : 0;
 }
 
 interface LocationContextType {
@@ -74,7 +76,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [restaurantes, setRestaurantes] = useState<any[]>([]);
 
-  // Novos estados para filtros e ordenação
+  // Novos estados para filtros e ordenação - Iniciando com valores máximos seguros
   const [sortBy, setSortBy] = useState('relevancia');
   const [minRating, setMinRating] = useState(0);
   const [maxDistance, setMaxDistance] = useState(99999);
@@ -147,7 +149,6 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Carrega restaurantes assim que o app inicia
     carregarRestaurantes();
 
     async function checkAndPrompt() {

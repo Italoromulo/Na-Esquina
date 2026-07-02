@@ -308,10 +308,10 @@ export default function PainelVendedorScreen() {
           <Text style={styles.backText}>Voltar</Text>
         </TouchableOpacity>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={styles.title}>Você ainda não tem perfil de vendedor</Text>
-          <Text style={styles.subtitle}>Cadastre seu ponto para aparecer para pessoas próximas.</Text>
+          <Text style={styles.title}>Seu perfil de vendedor está incompleto</Text>
+          <Text style={styles.subtitle}>Cadastre sua loja para habilitar essa função.</Text>
           <TouchableOpacity style={styles.button} onPress={() => router.push('/cadastro-vendedor')}>
-            <Text style={styles.buttonText}>Criar perfil do vendedor</Text>
+            <Text style={styles.buttonText}>Completar perfil do vendedor</Text>
           </TouchableOpacity>
         </View>
       </View>

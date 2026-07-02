@@ -60,7 +60,7 @@ export default function CadastroVendedorScreen() {
   const [cidade, setCidade] = useState('Rio de Janeiro');
   const [estado, setEstado] = useState('RJ');
   const [endereco, setEndereco] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
+  const [whatsapp, setWhatsapp] = useState(''); // 💡 DEVOLVIDO AQUI
   const [cepValido, setCepValido] = useState<boolean | null>(null);
 
   // Coordenadas guardadas em estado para gravação relacional estável
@@ -122,7 +122,12 @@ export default function CadastroVendedorScreen() {
     const [ruaParte = '', numeroParte = ''] = ruaNumeroParte.split(',');
     const bairroCidadeMatch = bairroCidadeParte.match(/^(.*?),\s*(.*?)\s*-\s*([A-Z]{2})$/i);
 
-    setRua(ruaParte.trim());
+    let ruaLimpa = ruaParte.trim();
+    if (ruaLimpa.includes(',')) {
+      ruaLimpa = ruaLimpa.split(',')[0].trim();
+    }
+
+    setRua(ruaLimpa);
     setNumero(numeroParte.trim());
 
     if (bairroCidadeMatch) {
@@ -188,13 +193,33 @@ export default function CadastroVendedorScreen() {
     }
   }
 
-  // Monitora as alterações e monta a string unificada do endereço
+  function validarHorarioCompleto(horario: string): boolean {
+    if (!horario) return true;
+    if (horario.length < 5) return false;
+    const [horas, minutos] = horario.split(':').map(Number);
+    return horas >= 0 && horas < 24 && minutos >= 0 && minutos < 60;
+  }
+
+  function tratarBlurHorario(horario: string, tipo: 'inicio' | 'fim') {
+    if (horario && !validarHorarioCompleto(horario)) {
+      showToast('Horário inválido', 'Insira uma hora válida entre 00:00 e 23:59.', 'error');
+      if (tipo === 'inicio') setHoraInicio('');
+      else setHoraFim('');
+    }
+  }
+
   useEffect(() => {
     if (cepValido === false) {
       setEndereco('CEP INDISPONÍVEL');
     } else if (rua || bairro) {
-      const textoConcatenado = `${rua.trim()}${numero ? `, ${numero.trim()}` : ''} - ${bairro.trim()}, ${cidade.trim()} - ${estado.trim()} | ${cep.trim()}.`;
-      setEndereco(textoConcatenado);
+      let ruaFormatada = rua.trim();
+      
+      if (ruaFormatada.includes(cidade)) {
+        ruaFormatada = ruaFormatada.split(cidade)[0].replace(/,\s*$/, '').trim();
+      }
+
+      const textoConcatenado = `${ruaFormatada}${numero ? `, ${numero.trim()}` : ''} - ${bairro.trim()}, ${cidade.trim()} - ${estado.trim()} | ${cep.trim()}.`;
+      setEndereco(textoConcatenado); // 💡 CORRIGIDO AQUI
     } else {
       setEndereco('');
     }
@@ -241,7 +266,6 @@ export default function CadastroVendedorScreen() {
       setWhatsapp(formatarWhatsapp(String(lojaBanco.whatsapp || lojaBanco.telefone || '')));
       setImagemUrlExistente(lojaBanco.imagem_url ?? null);
       
-      // 💡 CORREÇÃO HORÁRIOS: Agora puxa direto das colunas correspondentes salvando no estado
       setHoraInicio(lojaBanco.hora_inicio ?? '');
       setHoraFim(lojaBanco.hora_fim ?? '');
       
@@ -256,7 +280,6 @@ export default function CadastroVendedorScreen() {
         desconto_texto: lojaBanco.desconto_texto ?? null,
       });
 
-      // Decodifica o endereço salvo em uma string única: Rua, Número - Bairro, Cidade - UF | CEP.
       if (lojaBanco.endereco) {
         try {
           preencherEnderecoPelaConcatenacao(lojaBanco.endereco);
@@ -279,7 +302,7 @@ export default function CadastroVendedorScreen() {
             descricao: item.descricao ?? '',
             imagemUriLocal: null,
             imagem_url: item.imagem_url,
-            ja_salvo_no_banco: true, // Identificador de persistência mantido firme
+            ja_salvo_no_banco: true,
           }))
         );
       }
@@ -364,7 +387,7 @@ export default function CadastroVendedorScreen() {
         descricao: produtoDescricao.trim(),
         imagemUriLocal: produtoImagemLocal,
         imagem_url: null,
-        ja_salvo_no_banco: false, // 💡 Força falso para novos pratos serem salvos no insert
+        ja_salvo_no_banco: false,
       },
     ]);
 
@@ -374,7 +397,6 @@ export default function CadastroVendedorScreen() {
     setProdutoImagemLocal(null);
   }
 
-  // Remove apenas da tela agora; se já existe no Supabase, exclui só quando clicar em Salvar alterações.
   function removerProduto(id: string, jaSalvo: boolean | undefined) {
     if (jaSalvo) {
       setProdutosParaRemover((atuais) => Array.from(new Set([...atuais, id])));
@@ -408,6 +430,32 @@ export default function CadastroVendedorScreen() {
       return;
     }
 
+    setLoading(true);
+    try {
+      let queryValidaWhats = supabase
+        .from('restaurantes')
+        .select('id')
+        .eq('whatsapp', whatsappLimpo);
+
+      if (lojaId) {
+        queryValidaWhats = queryValidaWhats.neq('id', lojaId);
+      }
+
+      const { data: existeLojaWhats, error: erroValidacaoWhats } = await queryValidaWhats.maybeSingle();
+
+      if (erroValidacaoWhats) throw erroValidacaoWhats;
+
+      if (existeLojaWhats) {
+        showToast('WhatsApp indisponível', 'Este número de telefone já está associado a outra loja cadastrada.', 'error');
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.error("Erro ao validar unicidade do WhatsApp:", err);
+      setLoading(false);
+      return;
+    }
+
     if (cepValido === false) {
       showToast('CEP indisponível', 'Não é possível salvar um endereço com CEP inválido.', 'error');
       return;
@@ -418,18 +466,19 @@ export default function CadastroVendedorScreen() {
       return;
     }
 
+    if (!validarHorarioCompleto(horaInicio) || !validarHorarioCompleto(horaFim)) {
+      showToast('Horário inválido', 'Por favor, revise os campos de funcionamento utilizando o padrão de 24h.', 'error');
+      setLoading(false);
+      return;
+    }
+
     const horarioIncompleto = (horaInicio && !horaFim) || (!horaInicio && horaFim);
     if (horarioIncompleto) {
       showToast('Horário inválido', 'Preencha o horário de início e fim.', 'error');
+      setLoading(false);
       return;
     }
 
-    if ((horaInicio && horaInicio.length < 5) || (horaFim && horaFim.length < 5)) {
-      showToast('Horário inválido', 'Use o formato HH:MM.', 'error');
-      return;
-    }
-
-    setLoading(true);
     setSubindoImagem(true);
 
     try {
@@ -460,7 +509,7 @@ export default function CadastroVendedorScreen() {
         categoria_id: Number(categoriaId),
         imagem_url: urlLojaFinal,
         endereco: endereco.trim(),
-        whatsapp: whatsapp.replace(/\D/g, ''),
+        whatsapp: whatsappLimpo,
         latitude: latFinal,
         longitude: lngFinal,
         status: true,
@@ -471,8 +520,8 @@ export default function CadastroVendedorScreen() {
         mais_vendido: promocoesExistentes.mais_vendido,
         desconto_texto: promocoesExistentes.desconto_texto,
         id_usuario: data.user.id,
-        hora_inicio: horaInicio, // 💡 Salvando os horários nas colunas novas
-        hora_fim: horaFim       // 💡 Salvando os horários nas colunas novas
+        hora_inicio: horaInicio,
+        hora_fim: horaFim
       };
 
       let idDaLojaSalva = lojaId;
@@ -503,10 +552,9 @@ export default function CadastroVendedorScreen() {
         if (erroRemocaoCardapio) throw erroRemocaoCardapio;
       }
 
-      // 💡 CORREÇÃO GRAVAR NOVOS: Processamento de novos itens do cardápio re-sincronizado
       await Promise.all(
         cardapio.map(async (produto) => {
-          if (produto.ja_salvo_no_banco) return; // Se já existia, pula
+          if (produto.ja_salvo_no_banco) return;
 
           let imagemPratoFinal = null;
           if (produto.imagemUriLocal) {
@@ -537,7 +585,7 @@ export default function CadastroVendedorScreen() {
             categoria_id: Number(categoriaId),
             endereco: endereco.trim(),
             descricao: descricaoLoja.trim(),
-            whatsapp: whatsapp.replace(/\D/g, ''),
+            whatsapp: whatsappLimpo,
             imagem_url: urlLojaFinal,
             id: idDaLojaSalva,
             hora_inicio: horaInicio,
@@ -646,7 +694,7 @@ export default function CadastroVendedorScreen() {
       />
 
       <View style={styles.horarioContainer}>
-        <Text style={styles.labelHorario}>Horário de funcionamento</Text>
+        <Text style={styles.labelHorario}>Horário de funcionamento (Formato 24h)</Text>
         <View style={styles.linhaInputs}>
           <View style={styles.colunaInput}>
             <TextInput
@@ -657,6 +705,7 @@ export default function CadastroVendedorScreen() {
               maxLength={5}
               keyboardType="number-pad"
               onChangeText={(texto) => setHoraInicio(formatarHorario(texto))}
+              onBlur={() => tratarBlurHorario(horaInicio, 'inicio')}
             />
           </View>
           <Text style={styles.textoSeparador}>até</Text>
@@ -669,6 +718,7 @@ export default function CadastroVendedorScreen() {
               maxLength={5}
               keyboardType="number-pad"
               onChangeText={(texto) => setHoraFim(formatarHorario(texto))}
+              onBlur={() => tratarBlurHorario(horaFim, 'fim')}
             />
           </View>
         </View>
@@ -815,7 +865,6 @@ export default function CadastroVendedorScreen() {
                   <Text style={styles.menuPrice}>{produto.preco}</Text>
                   {!!produto.descricao && <Text style={styles.menuDescription} numberOfLines={2}>{produto.descricao}</Text>}
                 </View>
-                {/* 💡 CORREÇÃO: Passado corretamente a flag de persistência para a função remover */}
                 <TouchableOpacity onPress={() => removerProduto(produto.id, produto.ja_salvo_no_banco)} activeOpacity={0.75} style={styles.botaoRemover}>
                   <Text style={styles.removeText}>Remover</Text>
                 </TouchableOpacity>

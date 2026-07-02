@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { LayoutDashboard, MapPin, PackagePlus, Power } from 'lucide-react-native';
@@ -13,6 +13,7 @@ type LojaResumo = {
   endereco?: string;
   status?: boolean;
   cardapio?: any[];
+  imagem?: string; // Mantemos como 'imagem' aqui no nosso estado do React
 };
 
 export default function VendorDashboard() {
@@ -75,9 +76,19 @@ export default function VendorDashboard() {
         .select('id')
         .eq('restaurante_id', lojaBanco.id);
 
-      setLoja({ ...lojaBanco, cardapio: cardapioBanco ?? [] });
+      setLoja({ 
+        ...lojaBanco, 
+        cardapio: cardapioBanco ?? [],
+        // ⚠️ ATENÇÃO AQUI: Troque 'foto_url' pelo nome exato da coluna da imagem na sua tabela do Supabase
+        imagem: lojaBanco.foto_url || lojaBanco.imagem_url || lojaBanco.foto || lojaBanco.imagem 
+      });
     } else {
-      setLoja({ id: 'metadata', ...(metadata.loja ?? {}), status: !!metadata.loja?.status });
+      setLoja({ 
+        id: 'metadata', 
+        ...(metadata.loja ?? {}), 
+        status: !!metadata.loja?.status,
+        imagem: metadata.loja?.foto_url || metadata.loja?.imagem 
+      });
     }
 
     setLoading(false);
@@ -137,9 +148,16 @@ export default function VendorDashboard() {
     <View style={styles.card}>
       <AppToast toast={toast} onHide={() => setToast(null)} />
       <View style={styles.headerRow}>
-        <View style={styles.iconBox}>
-          <LayoutDashboard size={20} color="#D97941" />
-        </View>
+        
+        {/* Renderização Condicional */}
+        {loja.imagem ? (
+          <Image source={{ uri: loja.imagem }} style={styles.avatarImage} />
+        ) : (
+          <View style={styles.iconBox}>
+            <LayoutDashboard size={20} color="#D97941" />
+          </View>
+        )}
+
         <View style={{ flex: 1 }}>
           <Text style={styles.kicker}>Área do vendedor</Text>
           <Text style={styles.title}>{loja.nome || 'Seu ponto'}</Text>
@@ -184,6 +202,7 @@ const styles = StyleSheet.create({
   card: { backgroundColor: '#130B08', borderRadius: 24, padding: 16, marginBottom: 22, borderWidth: 1, borderColor: 'rgba(217, 121, 65, 0.22)' },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   iconBox: { width: 42, height: 42, borderRadius: 15, backgroundColor: 'rgba(217, 121, 65, 0.14)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(217, 121, 65, 0.28)' },
+  avatarImage: { width: 42, height: 42, borderRadius: 15, resizeMode: 'cover', backgroundColor: 'rgba(217, 121, 65, 0.14)' },
   kicker: { color: '#D97941', fontWeight: '900', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.8 },
   title: { color: '#F2E4D4', fontSize: 18, fontWeight: '900', marginTop: 2 },
   statusPill: { paddingHorizontal: 10, paddingVertical: 7, borderRadius: 999, backgroundColor: 'rgba(166, 27, 52, 0.18)' },
