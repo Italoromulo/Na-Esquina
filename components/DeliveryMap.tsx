@@ -59,6 +59,7 @@ export default function DeliveryMap() {
     minRating,
     maxDistance,
     maxPrice,
+    activeCategory,
   } = useLocation();
 
   useEffect(() => {
@@ -76,6 +77,13 @@ export default function DeliveryMap() {
     if (item.status === false || item.status === 'false') return false;
 
     if (!estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim)) return false;
+
+    // Filtro de Categorias
+    const matchesCategory = activeCategory === 'vendendo'
+      ? (item.status === true && estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim))
+      : (!activeCategory || activeCategory === 'todas' || String(item.categoria_id) === String(activeCategory));
+
+    if (!matchesCategory) return false;
 
     if (searchQuery) {
       const normalizedQuery = normalizeText(searchQuery);

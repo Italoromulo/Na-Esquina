@@ -60,6 +60,7 @@ export default function DeliveryMap() {
     minRating,
     maxDistance,
     maxPrice,
+    activeCategory,
   } = useLocation();
   
   useEffect(() => {
@@ -79,6 +80,13 @@ export default function DeliveryMap() {
 
     // 💥 CRITÉRIO DE EXPULSÃO 2: Validação da faixa de horário de funcionamento
     if (!estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim)) return false;
+
+    // Filtro de Categorias
+    const matchesCategory = activeCategory === 'vendendo'
+      ? (item.status === true && estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim))
+      : (!activeCategory || activeCategory === 'todas' || String(item.categoria_id) === String(activeCategory));
+
+    if (!matchesCategory) return false;
 
     // Mantém os outros filtros globais ativos caso o usuário pesquise na home
     if (searchQuery) {
