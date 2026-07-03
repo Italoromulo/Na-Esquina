@@ -194,9 +194,16 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
       >
         <Image source={{ uri: item.imagem_url }} style={styles.img} />
 
-        <View style={[styles.statusBadge, item.status ? styles.statusBadgeOnline : styles.statusBadgeOffline]}>
-          <Text style={styles.statusBadgeText}>{item.status ? "🟢 Online" : "🔴 Offline"}</Text>
-        </View>
+        {(() => {
+          const isOnline = item.status === true || item.status === 'true';
+          return (
+            <View style={[styles.statusBadge, isOnline ? styles.statusBadgeOnline : styles.statusBadgeOffline]}>
+              <Text style={[styles.statusBadgeText, isOnline ? styles.statusBadgeTextOnline : styles.statusBadgeTextOffline]}>
+                {isOnline ? "🟢 Online" : "🔴 Offline"}
+              </Text>
+            </View>
+          );
+        })()}
 
         <TouchableOpacity
           style={styles.favoriteButton}
@@ -333,9 +340,11 @@ const styles = StyleSheet.create({
   modalButtonCancel: { paddingVertical: 8 },
   modalButtonTextCancel: { color: 'rgba(242, 228, 212, 0.4)', fontWeight: '700', fontSize: 14 },
   statusBadge: { position: "absolute", top: 12, left: 12, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, borderWidth: 1, zIndex: 10 },
-  statusBadgeOnline: { backgroundColor: "rgba(11, 5, 3, 0.85)", borderColor: "rgba(34, 197, 94, 0.5)" },
-  statusBadgeOffline: { backgroundColor: "rgba(11, 5, 3, 0.85)", borderColor: "rgba(239, 68, 68, 0.5)" },
-  statusBadgeText: { color: "#FFFFFF", fontSize: 11, fontWeight: "900", textTransform: "uppercase", letterSpacing: 0.5 },
+  statusBadgeOnline: { backgroundColor: "rgba(34, 197, 94, 0.16)", borderColor: "rgba(34, 197, 94, 0.4)" },
+  statusBadgeOffline: { backgroundColor: "rgba(239, 68, 68, 0.16)", borderColor: "rgba(239, 68, 68, 0.4)" },
+  statusBadgeText: { fontSize: 11, fontWeight: "900", textTransform: "uppercase", letterSpacing: 0.5 },
+  statusBadgeTextOnline: { color: "#4ADE80" },
+  statusBadgeTextOffline: { color: "#FCA5A5" },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',

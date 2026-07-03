@@ -113,7 +113,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase
         .from("restaurantes")
         .select("*")
-        .eq("offline", false)
+        .or("offline.eq.false,offline.is.null")
         .order("id", { ascending: false });
 
       if (error) throw error;

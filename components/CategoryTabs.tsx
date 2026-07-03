@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/services/supabase';
 import { BlurView } from 'expo-blur';
-import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, Platform } from 'react-native';
 
 //  export type Category = 'all' | 'burguer' | 'pizza' | 'salgados' | 'doces';
 
@@ -106,10 +106,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(30, 20, 15, 0.9)' : 'rgba(255, 255, 255, 0.03)',
   },
   tabActiveBlur: {
-    backgroundColor: 'rgba(166, 3, 33, 0.4)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(166, 3, 33, 0.9)' : 'rgba(166, 3, 33, 0.4)',
   },
   emoji: {
     fontSize: 18,

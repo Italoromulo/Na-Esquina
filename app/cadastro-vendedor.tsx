@@ -144,7 +144,7 @@ export default function CadastroVendedorScreen() {
   async function buscarCoordenadasPorTexto(enderecoCompleto: string) {
     try {
       const urlEncoded = encodeURIComponent(enderecoCompleto);
-      const resposta = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${urlEncoded}&limit=1`);
+      const resposta = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${urlEncoded}&limit=1&email=italoromulo.dev@gmail.com`);
       const dados = await resposta.json();
 
       if (dados && dados.length > 0) {
@@ -494,7 +494,8 @@ export default function CadastroVendedorScreen() {
 
       if (Platform.OS !== 'web') {
         try {
-          const resultadoGeocode = await Location.geocodeAsync(endereco);
+          const enderecoLimpo = `${rua.trim()}${numero ? `, ${numero.trim()}` : ''} - ${bairro.trim()}, ${cidade.trim()} - ${estado.trim()}`;
+          const resultadoGeocode = await Location.geocodeAsync(enderecoLimpo);
           if (resultadoGeocode && resultadoGeocode.length > 0) {
             latFinal = resultadoGeocode[0].latitude;
             lngFinal = resultadoGeocode[0].longitude;
@@ -519,7 +520,6 @@ export default function CadastroVendedorScreen() {
         whatsapp: whatsappLimpo,
         latitude: latFinal,
         longitude: lngFinal,
-        status: true,
         destaque: promocoesExistentes.destaque,
         semana_destaque: promocoesExistentes.semana_destaque,
         dia_promo: promocoesExistentes.dia_promo,
@@ -542,7 +542,11 @@ export default function CadastroVendedorScreen() {
       } else {
         const { data: novaLoja, error: erroInsert } = await supabase
           .from('restaurantes')
-          .insert(payloadBanco)
+          .insert({
+            ...payloadBanco,
+            status: true,
+            offline: false, // 💡 Força offline como false para novos cadastros aparecerem na home e no mapa
+          })
           .select('id')
           .single();
         

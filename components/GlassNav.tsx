@@ -2,7 +2,7 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Heart, Home, User, Users } from 'lucide-react-native';
 import React from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View, Alert, Platform } from 'react-native';
 import { router, usePathname } from 'expo-router';
 import { supabase } from '@/services/supabase';
 
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     // Estilo semelhante ao botão do Rio de Janeiro / Zoom
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)', 
-    backgroundColor: 'rgba(26, 26, 26, 0.1)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(19, 11, 8, 0.94)' : 'rgba(26, 26, 26, 0.1)',
   },
   gradientOverlay: {
     ...StyleSheet.absoluteFillObject, // Cobre todo o fundo do vidro

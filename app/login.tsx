@@ -208,12 +208,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(242,228,212,0.07)',
     alignItems: 'center',
+    height: 54, // Fixed height to prevent circular dependency layout bugs
   },
   inputPassword: { // 💡 Input ocupa quase todo o espaço, deixando a rebarba pro ícone
     flex: 1,
     color: '#F2E4D4',
-    padding: 15,
+    paddingHorizontal: 15,
     fontSize: 16,
+    height: '100%',
   },
   eyeButton: { // 💡 Centraliza o olhinho perfeitamente na direita
     paddingHorizontal: 15,

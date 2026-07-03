@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Animated,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(11, 5, 3, 0.55)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(11, 5, 3, 0.95)' : 'rgba(11, 5, 3, 0.55)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(242, 228, 212, 0.08)',
     zIndex: 100,

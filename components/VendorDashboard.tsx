@@ -175,11 +175,16 @@ export default function VendorDashboard() {
           <Text style={styles.title}>{loja.nome || 'Seu ponto'}</Text>
         </View>
 
-        {!loja.offline && (
-          <View style={[styles.statusPill, loja.status && styles.statusPillOn]}>
-            <Text style={styles.statusText}>{loja.status ? 'Online' : 'Offline'}</Text>
-          </View>
-        )}
+        {!loja.offline && (() => {
+          const isOnline = loja.status === true || loja.status === 'true';
+          return (
+            <View style={[styles.statusPill, isOnline ? styles.statusPillOn : styles.statusPillOff]}>
+              <Text style={[styles.statusText, isOnline ? styles.statusTextOn : styles.statusTextOff]}>
+                {isOnline ? 'Online' : 'Offline'}
+              </Text>
+            </View>
+          );
+        })()}
       </View>
 
       {loja.offline ? (
@@ -229,9 +234,12 @@ const styles = StyleSheet.create({
   avatarImage: { width: 42, height: 42, borderRadius: 15, resizeMode: 'cover', backgroundColor: 'rgba(217, 121, 65, 0.14)' },
   kicker: { color: '#D97941', fontWeight: '900', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.8 },
   title: { color: '#F2E4D4', fontSize: 18, fontWeight: '900', marginTop: 2 },
-  statusPill: { paddingHorizontal: 10, paddingVertical: 7, borderRadius: 999, backgroundColor: 'rgba(166, 27, 52, 0.18)' },
-  statusPillOn: { backgroundColor: 'rgba(30, 160, 90, 0.22)' },
-  statusText: { color: '#F2E4D4', fontSize: 11, fontWeight: '900' },
+  statusPill: { paddingHorizontal: 10, paddingVertical: 7, borderRadius: 999, backgroundColor: 'rgba(239, 68, 68, 0.16)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.3)' },
+  statusPillOn: { backgroundColor: 'rgba(34, 197, 94, 0.16)', borderColor: 'rgba(34, 197, 94, 0.3)' },
+  statusPillOff: {},
+  statusText: { fontSize: 11, fontWeight: '900' },
+  statusTextOn: { color: '#4ADE80' },
+  statusTextOff: { color: '#FCA5A5' },
   metricsRow: { flexDirection: 'row', gap: 10, marginTop: 14 },
   metricBox: { width: 74, backgroundColor: 'rgba(11, 5, 3, 0.45)', borderRadius: 16, padding: 12, alignItems: 'center' },
   metricBoxWide: { flex: 1, backgroundColor: 'rgba(11, 5, 3, 0.45)', borderRadius: 16, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 7 },

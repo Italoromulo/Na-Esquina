@@ -375,9 +375,16 @@ export default function DetalheVendedorScreen() {
 
           <View style={styles.card}>
             <View style={styles.topRow}>
-              <View style={[styles.statusPill, vendedor.status && styles.statusPillOn]}>
-                <Text style={styles.statusText}>{vendedor.status ? '🟢 Vendendo agora' : '🔴 Fora do horário'}</Text>
-              </View>
+              {(() => {
+                const isOnline = vendedor.status === true || vendedor.status === 'true';
+                return (
+                  <View style={[styles.statusPill, isOnline ? styles.statusPillOn : styles.statusPillOff]}>
+                    <Text style={[styles.statusText, isOnline ? styles.statusTextOn : styles.statusTextOff]}>
+                      {isOnline ? '🟢 Vendendo agora' : '🔴 Fora do horário'}
+                    </Text>
+                  </View>
+                );
+              })()}
 
               <View style={styles.topActions}>
                 <TouchableOpacity style={styles.iconCircleButton} onPress={alternarFavorito}>
@@ -605,9 +612,12 @@ const styles = StyleSheet.create({
   topActions: { flexDirection: 'row', gap: 8 },
   iconCircleButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(242,228,212,0.05)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(242,228,212,0.1)' },
   menuCard: { marginTop: 25 },
-  statusPill: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(166,27,52,0.18)' },
-  statusPillOn: { backgroundColor: 'rgba(30,160,90,0.22)' },
-  statusText: { color: '#F2E4D4', fontWeight: '900' },
+  statusPill: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(239, 68, 68, 0.16)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.3)' },
+  statusPillOn: { backgroundColor: 'rgba(34, 197, 94, 0.16)', borderColor: 'rgba(34, 197, 94, 0.3)' },
+  statusPillOff: {},
+  statusText: { fontWeight: '900' },
+  statusTextOn: { color: '#4ADE80' },
+  statusTextOff: { color: '#FCA5A5' },
   nome: { color: '#F2E4D4', fontSize: 28, fontWeight: '900' },
   title: { color: '#F2E4D4', fontSize: 24, fontWeight: '900', textAlign: 'center' },
   meta: { color: '#D97941', marginTop: 4, fontWeight: '800' },

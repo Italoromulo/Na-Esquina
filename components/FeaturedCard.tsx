@@ -38,8 +38,7 @@ export default function FeaturedCard() {
     const { data, error } = await supabase
       .from('restaurantes')
       .select('*')
-      .or('semana_destaque.eq.true,dia_promo.eq.true,destaque.eq.true,combo_especial.eq.true,mais_vendido.eq.true')
-      .eq('offline', false);
+      .or('semana_destaque.eq.true,dia_promo.eq.true,destaque.eq.true,combo_especial.eq.true,mais_vendido.eq.true');
 
     if (error) {
       console.error("Erro ao carregar destaques do Supabase:", error);
@@ -47,7 +46,8 @@ export default function FeaturedCard() {
     }
 
     if (data) {
-      const formatados = data.map((item) => {
+      const ativos = data.filter((item) => item.offline !== true && item.offline !== 'true');
+      const formatados = ativos.map((item) => {
         let tag = 'NOVIDADE';
         let badge = item.desconto_texto || 'CONFIRA';
         let isSpecial = false;
