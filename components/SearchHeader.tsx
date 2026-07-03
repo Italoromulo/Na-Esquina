@@ -18,7 +18,7 @@ export default function SearchHeader({
 }: SearchHeaderProps) {
   return (
     <View style={[styles.container, style]}>
-      <BlurView intensity={30} tint="dark" style={styles.searchBar}>
+      <BlurView intensity={50} tint="dark" style={styles.searchBar} experimentalBlurMethod="dimeaxis">
         <TextInput
           style={styles.input}
           placeholder="Buscar restaurantes ou pratos..."
@@ -36,7 +36,7 @@ export default function SearchHeader({
           </TouchableOpacity>
         )}
         <TouchableOpacity style={styles.filterBtn} onPress={onFilterPress} activeOpacity={0.7}>
-          <BlurView intensity={40} tint="dark" style={styles.filterBlur}>
+          <BlurView intensity={60} tint="dark" style={styles.filterBlur} experimentalBlurMethod="dimeaxis">
             <SlidersHorizontal size={18} color="#F2E4D4" />
           </BlurView>
         </TouchableOpacity>

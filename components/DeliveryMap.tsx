@@ -75,7 +75,7 @@ export default function DeliveryMap() {
     if (item.offline === true || item.offline === 'true') return false;
     if (item.status === false || item.status === 'false') return false;
 
-    // if (!estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim)) return false;
+    if (!estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim)) return false;
 
     if (searchQuery) {
       const normalizedQuery = normalizeText(searchQuery);
@@ -90,7 +90,7 @@ export default function DeliveryMap() {
 
     const rating = item.total_avaliacoes && item.total_avaliacoes > 0
       ? item.soma_notas / item.total_avaliacoes
-      : 5.0;
+      : 0.0;
     if (rating < minRating) return false;
 
     if (maxDistance < 99999) {
@@ -353,7 +353,7 @@ export default function DeliveryMap() {
 
   return (
     <View style={[styles.mapCard, { height: isExpanded ? 620 : 320 }]}>
-      <BlurView intensity={10} tint="dark" style={styles.mapLabel}>
+      <BlurView intensity={25} tint="dark" style={styles.mapLabel} experimentalBlurMethod="dimeaxis">
         <ThemedText style={styles.labelText}>Rio de Janeiro</ThemedText>
       </BlurView>
       <WebView
@@ -376,7 +376,7 @@ export default function DeliveryMap() {
         onPress={() => setIsExpanded(!isExpanded)}
         activeOpacity={0.7}
       >
-        <BlurView intensity={15} tint="dark" style={styles.expandBlur}>
+        <BlurView intensity={35} tint="dark" style={styles.expandBlur} experimentalBlurMethod="dimeaxis">
           <LinearGradient
             colors={['rgba(255, 255, 255, 0.08)', 'transparent', 'rgba(255, 255, 255, 0.12)']}
             start={{ x: 0, y: 0 }}

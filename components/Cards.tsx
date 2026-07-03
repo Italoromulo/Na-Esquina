@@ -26,6 +26,38 @@ const normalizeText = (text: string) => {
     .toLowerCase();
 };
 
+// 💡 Função auxiliar para verificar se a loja está dentro do horário de funcionamento
+const estaNoHorarioDeFuncionamento = (horaInicio?: string, horaFim?: string) => {
+  if (!horaInicio || !horaFim) return true;
+
+  try {
+    const agora = new Date();
+    const horasAtuais = agora.getHours();
+    const minutosAtuais = agora.getMinutes();
+    const tempoAtualEmMinutos = horasAtuais * 60 + minutosAtuais;
+
+    const converterParaMinutos = (horaStr: string) => {
+      const partes = horaStr.split(':');
+      const h = parseInt(partes[0], 10);
+      const m = partes[1] ? parseInt(partes[1], 10) : 0;
+      return isNaN(h) ? null : h * 60 + m;
+    };
+
+    const inicioMinutos = converterParaMinutos(horaInicio);
+    const fimMinutos = converterParaMinutos(horaFim);
+
+    if (inicioMinutos === null || fimMinutos === null) return true;
+
+    if (fimMinutos < inicioMinutos) {
+      return tempoAtualEmMinutos >= inicioMinutos || tempoAtualEmMinutos <= fimMinutos;
+    }
+
+    return tempoAtualEmMinutos >= inicioMinutos && tempoAtualEmMinutos <= fimMinutos;
+  } catch {
+    return true;
+  }
+};
+
 export default function Cards({ activeCategory, searchQuery }: CardsProps) {
   const { isTablet } = useResponsive();
   const {
@@ -84,7 +116,7 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
 
     // 2. Filtro de Categorias
     const matchesCategory = activeCategory === 'vendendo'
-      ? item.status === true
+      ? (item.status === true && estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim))
       : (!activeCategory || activeCategory === 'todas' || String(item.categoria_id) === String(activeCategory));
 
     if (!matchesCategory) {
@@ -110,7 +142,7 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
     // 4. Filtro de Nota/Avaliação
     const rating = item.total_avaliacoes && item.total_avaliacoes > 0
       ? item.soma_notas / item.total_avaliacoes
-      : 5.0;
+      : 0.0;
     if (rating < minRating) {
       if (deveMonitorar) console.log(`⚠️ Restaurante "${item.nome}" barrou na avaliação mínima. Nota: ${rating}, Mínima exigida: ${minRating}`);
       return false;
@@ -146,8 +178,8 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
 
   const sortedRestaurantes = [...filteredRestaurantes].sort((a, b) => {
     if (sortBy === 'avaliacao') {
-      const ratingA = a.total_avaliacoes && a.total_avaliacoes > 0 ? a.soma_notas / a.total_avaliacoes : 5.0;
-      const ratingB = b.total_avaliacoes && b.total_avaliacoes > 0 ? b.soma_notas / b.total_avaliacoes : 5.0;
+      const ratingA = a.total_avaliacoes && a.total_avaliacoes > 0 ? a.soma_notas / a.total_avaliacoes : 0.0;
+      const ratingB = b.total_avaliacoes && b.total_avaliacoes > 0 ? b.soma_notas / b.total_avaliacoes : 0.0;
       return ratingB - ratingA;
     }
     if (sortBy === 'distancia' && userLocation) {
@@ -163,14 +195,18 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
     return 0;
   });
 
-  const restaurantesOnline = sortedRestaurantes.filter(item => item.status === true);
-  const restaurantesOffline = sortedRestaurantes.filter(item => item.status !== true);
+  const restaurantesOnline = sortedRestaurantes.filter(
+    item => (item.status === true || item.status === 'true') && estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim)
+  );
+  const restaurantesOffline = sortedRestaurantes.filter(
+    item => (item.status !== true && item.status !== 'true') || !estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim)
+  );
 
   const renderCard = (item: any) => {
     const isFav = favorites.includes(String(item.id));
     const rating = item.total_avaliacoes && item.total_avaliacoes > 0
       ? (item.soma_notas / item.total_avaliacoes).toFixed(1)
-      : '5.0';
+      : '0.0';
 
     const distance = (userLocation && item.latitude && item.longitude)
       ? calculateDistance(userLocation.latitude, userLocation.longitude, parseFloat(item.latitude), parseFloat(item.longitude))
@@ -195,7 +231,7 @@ export default function Cards({ activeCategory, searchQuery }: CardsProps) {
         <Image source={{ uri: item.imagem_url }} style={styles.img} />
 
         {(() => {
-          const isOnline = item.status === true || item.status === 'true';
+          const isOnline = (item.status === true || item.status === 'true') && estaNoHorarioDeFuncionamento(item.hora_inicio, item.hora_fim);
           return (
             <View style={[styles.statusBadge, isOnline ? styles.statusBadgeOnline : styles.statusBadgeOffline]}>
               <Text style={[styles.statusBadgeText, isOnline ? styles.statusBadgeTextOnline : styles.statusBadgeTextOffline]}>

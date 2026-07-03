@@ -32,12 +32,13 @@ export default function HomeScreen() {
   return (
     <ThemedView style={[styles.container, isTablet && styles.containerTablet]}>
       <BlurView
-        intensity={40}
+        intensity={60}
         tint="dark"
         style={[
           styles.topHeaderContainer,
           { paddingTop: insets.top + 10 }
         ]}
+        experimentalBlurMethod="dimeaxis"
       >
         <View style={styles.headerRow}>
           <SearchHeader 
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: Platform.OS === 'android' ? 'rgba(11, 5, 3, 0.95)' : 'rgba(11, 5, 3, 0.55)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(11, 5, 3, 0.65)' : 'rgba(11, 5, 3, 0.55)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(242, 228, 212, 0.08)',
     zIndex: 100,

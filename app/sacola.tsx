@@ -16,7 +16,7 @@ export default function SacolaScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Sacola</Text>
         <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()} activeOpacity={0.7}>
-          <BlurView intensity={30} tint="dark" style={styles.closeBlur}>
+          <BlurView intensity={55} tint="dark" style={styles.closeBlur} experimentalBlurMethod="dimeaxis">
             <X size={20} color="#F2E4D4" />
           </BlurView>
         </TouchableOpacity>

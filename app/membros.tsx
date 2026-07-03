@@ -231,7 +231,7 @@ export default function MembrosScreen() {
         </View>
 
         {/* ── ABOUT SECTION ── */}
-        <BlurView intensity={40} tint="dark" style={styles.aboutCard}>
+        <BlurView intensity={60} tint="dark" style={styles.aboutCard} experimentalBlurMethod="dimeaxis">
           <View style={styles.aboutHeader}>
             <Ionicons name="information-circle-outline" size={20} color={COLORS.brasa} />
             <Text style={styles.sectionTitle}>Sobre o Projeto</Text>
@@ -249,7 +249,7 @@ export default function MembrosScreen() {
         </BlurView>
 
         {/* ── ADVICE API SECTION ── */}
-        <BlurView intensity={40} tint="dark" style={styles.aboutCard}>
+        <BlurView intensity={60} tint="dark" style={styles.aboutCard} experimentalBlurMethod="dimeaxis">
           <View style={styles.aboutHeader}>
             <Ionicons name="chatbubble-ellipses-outline" size={20} color={COLORS.brasa} />
             <Text style={styles.sectionTitle}>Mensagem do Dia (API)</Text>
@@ -266,7 +266,7 @@ export default function MembrosScreen() {
         {/* ── STATS ── */}
         <View style={styles.statsRow}>
           {stats.map((stat) => (
-            <BlurView key={stat.label} intensity={35} tint="dark" style={styles.statCard}>
+            <BlurView key={stat.label} intensity={50} tint="dark" style={styles.statCard} experimentalBlurMethod="dimeaxis">
               <Text style={styles.statEmoji}>{stat.icon}</Text>
               <Text style={styles.statValue}>{stat.value}</Text>
               <Text style={styles.statLabel}>{stat.label}</Text>
@@ -275,7 +275,7 @@ export default function MembrosScreen() {
         </View>
 
         {/* ── TECH STACK ── */}
-        <BlurView intensity={40} tint="dark" style={styles.techCard}>
+        <BlurView intensity={60} tint="dark" style={styles.techCard} experimentalBlurMethod="dimeaxis">
           <View style={styles.aboutHeader}>
             <Ionicons name="code-slash-outline" size={20} color={COLORS.brasa} />
             <Text style={styles.sectionTitle}>Stack Tecnológica</Text>

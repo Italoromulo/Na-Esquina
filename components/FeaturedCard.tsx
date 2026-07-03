@@ -141,9 +141,10 @@ export default function FeaturedCard() {
                   
                   {/* 💡 CORES DINÂMICAS NAS BADGES: Injetando estilos inline mapeados do objeto premium */}
                   <BlurView 
-                    intensity={40} 
+                    intensity={60} 
                     tint="dark" 
                     style={[styles.badgeBlur, { backgroundColor: temaVisual.bg, borderColor: temaVisual.border }]}
+                    experimentalBlurMethod="dimeaxis"
                   >
                     <Text style={[styles.badgeText, { color: temaVisual.text }]}>{promo.badge}</Text>
                   </BlurView>

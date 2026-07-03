@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   avatarPlaceholder: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#1A120D', borderWidth: 1, borderColor: 'rgba(242,228,212,0.1)', justifyContent: 'center', alignItems: 'center' },
   cameraIconBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#D97941', width: 24, height: 24, borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#0B0503' },
   avatarLabel: { color: 'rgba(242,228,212,0.5)', fontSize: 13, fontWeight: '600' },
-  input: { backgroundColor: '#1A120D', color: '#F2E4D4', borderRadius: 12, padding: 15, marginBottom: 13, fontSize: 16, borderWidth: 1, borderColor: 'rgba(242,228,212,0.07)' },
+  input: { backgroundColor: '#1A120D', color: '#F2E4D4', borderRadius: 12, paddingHorizontal: 15, height: 54, marginBottom: 13, fontSize: 16, borderWidth: 1, borderColor: 'rgba(242,228,212,0.07)' },
   passwordContainer: { flexDirection: 'row', backgroundColor: '#1A120D', borderRadius: 12, marginBottom: 13, borderWidth: 1, borderColor: 'rgba(242,228,212,0.07)', alignItems: 'center', height: 54 },
   inputPassword: { flex: 1, color: '#F2E4D4', paddingHorizontal: 15, fontSize: 16, height: '100%' },
   eyeButton: { paddingHorizontal: 15, justifyContent: 'center', alignItems: 'center', height: '100%' },

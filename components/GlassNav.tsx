@@ -27,7 +27,7 @@ export default function GlassNav({ scrollY }: any) {
   ]}
 >
       {/* Camada 1: O corpo do vidro com Blur mais suave, no estilo do botão de Zoom/Rio */}
-      <BlurView intensity={32} tint="dark" style={styles.glass}>
+      <BlurView intensity={50} tint="dark" style={styles.glass} experimentalBlurMethod="dimeaxis">
         
         {/* Camada 2: Gradiente sutil para simular reflexo de luz */}
         <LinearGradient
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     // Estilo semelhante ao botão do Rio de Janeiro / Zoom
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)', 
-    backgroundColor: Platform.OS === 'android' ? 'rgba(19, 11, 8, 0.94)' : 'rgba(26, 26, 26, 0.1)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(19, 11, 8, 0.65)' : 'rgba(26, 26, 26, 0.1)',
   },
   gradientOverlay: {
     ...StyleSheet.absoluteFillObject, // Cobre todo o fundo do vidro

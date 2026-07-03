@@ -74,7 +74,12 @@ export default function FavoritosScreen() {
       />
 
       {/* Header absolute */}
-      <View style={[styles.headerContainer, { paddingTop: insets.top + 12 }]}>
+      <BlurView
+        intensity={60}
+        tint="dark"
+        style={[styles.headerContainer, { paddingTop: insets.top + 12 }]}
+        experimentalBlurMethod="dimeaxis"
+      >
         <View style={styles.headerContent}>
           <TouchableOpacity
             style={styles.backButton}
@@ -86,7 +91,7 @@ export default function FavoritosScreen() {
           <Text style={styles.headerTitle}>Favoritos</Text>
           <View style={{ width: 40 }} /> {/* Spacer to center the title */}
         </View>
-      </View>
+      </BlurView>
 
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
@@ -101,7 +106,7 @@ export default function FavoritosScreen() {
         scrollEventThrottle={16}
       >
         {!isLogged ? (
-          <BlurView intensity={30} tint="dark" style={styles.emptyCard}>
+          <BlurView intensity={50} tint="dark" style={styles.emptyCard} experimentalBlurMethod="dimeaxis">
             <View style={styles.emptyIconContainer}>
               <Heart size={42} color="#D97941" strokeWidth={1.5} />
             </View>
@@ -118,7 +123,7 @@ export default function FavoritosScreen() {
             </TouchableOpacity>
           </BlurView>
         ) : !temFavoritos ? (
-          <BlurView intensity={30} tint="dark" style={styles.emptyCard}>
+          <BlurView intensity={50} tint="dark" style={styles.emptyCard} experimentalBlurMethod="dimeaxis">
             <View style={styles.emptyIconContainer}>
               <Heart size={42} color="#746B63" strokeWidth={1.5} />
             </View>
@@ -198,7 +203,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: Platform.OS === 'android' ? 'rgba(11, 5, 3, 0.95)' : 'rgba(11, 5, 3, 0.55)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(11, 5, 3, 0.65)' : 'rgba(11, 5, 3, 0.55)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(242, 228, 212, 0.08)',
     zIndex: 100,

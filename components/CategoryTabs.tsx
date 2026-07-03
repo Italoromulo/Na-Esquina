@@ -54,12 +54,13 @@ export default function CategoryTabs({ activeCategory, onSelectCategory }: Categ
             style={[styles.tabWrapper, isActive && styles.tabActiveWrapper]}
             >
             <BlurView
-              intensity={isActive ? 50 : 20}
+              intensity={isActive ? 70 : 35}
               tint="dark"
               style={[
                 styles.tabBlur,
                 isActive && styles.tabActiveBlur,
               ]}
+              experimentalBlurMethod="dimeaxis"
             >
               <Text style={styles.emoji}>{cat.emoji}</Text>
               <Text style={[styles.label, isActive && styles.labelActive]}>
@@ -106,10 +107,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: Platform.OS === 'android' ? 'rgba(30, 20, 15, 0.9)' : 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(30, 20, 15, 0.65)' : 'rgba(255, 255, 255, 0.03)',
   },
   tabActiveBlur: {
-    backgroundColor: Platform.OS === 'android' ? 'rgba(166, 3, 33, 0.9)' : 'rgba(166, 3, 33, 0.4)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(166, 3, 33, 0.65)' : 'rgba(166, 3, 33, 0.4)',
   },
   emoji: {
     fontSize: 18,
